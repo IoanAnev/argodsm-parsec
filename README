@@ -1,0 +1,82 @@
+==== Compiling PARSECSs ====
+
+Before compiling anything the env.sh script must be run. This sets up the variable containing the path to 
+the root directory of the benchmark suite (sets it to the current working directory). 
+In MN it will also load the correct environment modules. 
+To build a benchmark run the
+build.sh script like this:
+
+source env.sh
+./build.sh <benchmark> <version> [extra_flags]
+
+    * benchmark is the name or names of the benchmark(s) to compile
+        e.g. ./build.sh 'swaptions dedup canneal' ompss
+
+    * version is the implementation or implementations you want to compile
+        e.g. ./build.sh 'swaptions ferret' 'serial pthreads ompss'
+
+    * extra flags is optional and can be additional compilation flags the user
+        might want to pass.  This can be used to enable OmpSs instrumentation or 
+        keep intermediate Mercurium compiler source files.
+        e.g. ./build.sh bodytrack 'serial ompss' '--instrument -K'
+
+Available versions:
+	- serial: Original sequential version of the code.
+	- pthread: Original parallel implementation with Pthreads.
+	- omp3: Oritinal parallel impelemntation with OpenMP 3.0.
+	- ompss:  Our parallel implementation with OmpSs tasks.
+	- ompss_instr: Same as ompss but with instrumetation enabled, creating a different executable.
+	- omp4: Our parallel implementation using OpenMP 4.0 tasks.
+	- tbb: Not Supported!
+
+Alternatively, you may want to build the benchmarks manually.  For most benchmarks,
+blackscholes, canneal, dedup, facesim, ferret, fluianimate, freqmine, swaptions
+compilation and installation is done with the following commands:
+
+make version=<serial | pthreads | openmp | omp | ompss | ompss_instr>                  #choose one version - e.g. make version=ompss
+
+make version=<serial | pthreads | openmp | omp | ompss | ompss_instr> install 	        #this will install the executables in the bin dir
+
+To clean, run 
+
+make version=<serial | pthreads | openmp | omp | ompss | ompss_instr> clean            #Clean files of the selected version
+
+In case the benchmark uses autotools, first do an autoreconf -fiv and then run the configure 
+script. Take a look at the build script of each benchmark (in ${ROOT}/benchmark-name/bench) or just list the help
+of the configure script. Note that compiler flags being used are the ones provided by the environment or the build 
+scripts. Be sure to have any flags you want set up (or pass them to the configure script or makefile in the 
+command line).
+After the configure script is run, proceed as noted previously, with the "make" command inside the "src" directory 
+of the benchmark.
+
+==== Dependencies =====
+
+PARSEC-BSC comes bundled with two libraries: GNU Science Library (GSL) and ImageMagick 6.3.6. Currently you need both of them to compile 
+Ferret. Just use the provided build script inside "parseclibs" to build both libraries:
+
+* As of revision 568, ImageMagick has been removed, ferret no longer requires it.  
+
+cd ${ROOT}/parseclibs/
+./buildlibs.sh imagick gsl
+
+Once you are done, you can compile Ferret. Its Makefiles already link against the libraries in ${ROOT}/parseclibs
+
+
+==== Executing PARSECSs ====
+
+To execute a benchmark you can run the executable benchmark-version from the "bin" folder in each application.
+
+run.sh <version> <load> <nthreads>
+ 	
+    * version is the implementation you want to run
+
+    * load is the input set you want to use - it can be
+      test, simdev, simsmall, simmedium, simlarge, native
+
+    * nthreads is the number of threads you want to use
+        e.g. ./ferret/bench/run.sh ompss native 16
+
+In each benchmark folder a parsec folder exists that contains the correct input arguments for the different
+inputs (test, small, medium, large, native).  You will need to download the input files from http://parsec.cs.princeton.edu/download.htm 
+and add them in the input folder of the corresponding benchmark.
+
