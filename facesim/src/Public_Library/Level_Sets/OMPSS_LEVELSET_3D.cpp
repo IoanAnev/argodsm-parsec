@@ -1,6 +1,7 @@
 //#####################################################################
 // Copyright 2002-2004, Doug Enright, Ronald Fedkiw, Frederic Gibou, Sergey Koltakov, Neil Molino, Igor Neverov, Andrew Selle.
 // This file is part of PhysBAM whose distribution is governed by the license contained in the accompanying file PHYSBAM_COPYRIGHT.txt.
+// OmpSs/OpenMP 4.0 versions by Raul Vidal Ortiz - Barcelona Supercomputing Center
 //#####################################################################
 #include "OMPSS_LEVELSET_3D.h"
 #include "../Utilities/DEBUG_UTILITIES.h"

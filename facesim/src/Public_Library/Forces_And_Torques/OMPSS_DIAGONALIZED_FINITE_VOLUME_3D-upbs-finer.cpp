@@ -1,11 +1,7 @@
 //#####################################################################
 // Copyright 2003-2004, Ron Fedkiw, Geoffrey Irving, Igor Neverov, Eftychios Sifakis, Joseph Teran.
 // This file is part of PhysBAM whose distribution is governed by the license contained in the accompanying file PHYSBAM_COPYRIGHT.txt.
-/*
-    OPENMP - OMPSS
-	Copyright 2014-2015 Raul Vidal Ortiz - Barcelona Supercomputing Center
-	Distributed under the same license as the rest of PhysBAM
-*/
+// OmpSs/OpenMP 4.0 versions by Raul Vidal Ortiz - Barcelona Supercomputing Center
 //#####################################################################
 #include <omp.h>
 #include "OMPSS_DIAGONALIZED_FINITE_VOLUME_3D-upbs-finer.h"

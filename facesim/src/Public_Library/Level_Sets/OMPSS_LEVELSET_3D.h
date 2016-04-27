@@ -1,6 +1,7 @@
 //#####################################################################
 // Copyright 2002, 2003, 2004, Zhaosheng Bao, Ronald Fedkiw, Eran Guendelman, Sergey Koltakov, Neil Molino, Igor Neverov, Robert Bridson, Rachel Weinstein.
 // This file is part of PhysBAM whose distribution is governed by the license contained in the accompanying file PHYSBAM_COPYRIGHT.txt.
+// OmpSs/OpenMP 4.0 versions by Raul Vidal Ortiz - Barcelona Supercomputing Center
 //#####################################################################
 // Class LEVELSET_3D
 //#####################################################################

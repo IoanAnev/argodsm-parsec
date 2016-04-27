@@ -1,6 +1,7 @@
 // annealer_thread.cpp
 //
 // Created by Daniel Schwartz-Narbonne on 14/04/07.
+// OmpSs/OpenMP 4.0 versions written by Dimitrios Chasapis - Barcelona Supercomputing Center
 //
 // Copyright 2007-2008 Princeton University
 // All rights reserved.
@@ -39,13 +40,6 @@
 #include <iostream>
 #include <fstream>
 #include "rng.h"
-#if defined ENABLE_EXTRAE
-    #include "extrae.h"
-    extern extrae_type_t manualevent;
-    extern unsigned extrae_nvalues;
-    extern char ** extrae_descriptions;
-    extern extrae_value_t* extrae_values;
-#endif
 
 using std::cout;
 using std::endl;

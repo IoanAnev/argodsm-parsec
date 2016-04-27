@@ -2,7 +2,8 @@
  * Copyright (C) 2008 Princeton University
  * All rights reserved.
  * Authors: Jia Deng, Gilberto Contreras
- *
+ * OmpSs/OpenMP 4.0 versions written by Raul Vidal and Dimitrios Chasapis - Barcelona Supercomputing Center
+ * 
  * streamcluster - Online clustering algorithm
  *
  * Current ompss code is using the points array as input/output, but should also add the Points struct or 

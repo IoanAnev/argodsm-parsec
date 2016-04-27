@@ -1,5 +1,5 @@
 /*
-	Copyright 2014-2015 Raul Vidal Ortiz
+	Copyright 2014-2015 Raul Vidal Ortiz - Barcelona Supercomputing Center
 	Distributed under the same license as the rest of PhysBAM
 */
 #include "OMPSS_POOL.h"

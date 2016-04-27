@@ -1,5 +1,6 @@
 //Code originally written by Richard O. Lee
 //Modified by Christian Bienia and Christian Fensch
+//This OpenMP 4.0 version written by Dimitrios Chasapis - Barcelona Supercomputing Center
 
 #include <cstdlib>
 #include <cstring>

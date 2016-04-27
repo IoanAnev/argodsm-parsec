@@ -6,6 +6,7 @@
  *
  * Originally written by Minlan Yu.
  * Largely rewritten by Christian Bienia.
+ * OmpSs/OpenMP 4.0 versions written by Dimitrios Chasapis - Barcelona Supercomputing Center
  */
 
 /*

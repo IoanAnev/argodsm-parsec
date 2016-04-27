@@ -1,6 +1,7 @@
 //#####################################################################
 // Copyright 2004, Zhaosheng Bao, Ron Fedkiw, Andrew Selle, Joseph Teran.
 // This file is part of PhysBAM whose distribution is governed by the license contained in the accompanying file PHYSBAM_COPYRIGHT.txt.
+// OmpSs/OpenMP 4.0 versions by Raul Vidal Ortiz - Barcelona Supercomputing Center
 //#####################################################################
 #include "OMPSS_BOX_HIERARCHY.h"
 #if defined ENABLE_OMPSS || defined ENABLE_OPENMP

@@ -1,5 +1,6 @@
 //Code originally written by Richard O. Lee
 //Modified by Christian Bienia and Christian Fensch
+//This OmpSs version written by Dimitrios Chasapis and Iulian Brumar - Barcelona Supercomputing Center
 
 #include <cstdlib>
 #include <cstring>

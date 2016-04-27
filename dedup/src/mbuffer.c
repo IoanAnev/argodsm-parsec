@@ -1,5 +1,6 @@
 //Copyright 2009 Princeton University
 //Written by Christian Bienia
+//OmpSs/OpenMP 4.0 versions written by Dimitrios Chasapis - Barcelona Supercomputing Center
 
 #include <stdlib.h>
 #include <string.h>

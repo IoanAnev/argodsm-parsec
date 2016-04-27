@@ -1,6 +1,7 @@
 //#####################################################################
 // Copyright 2005, Eftychios sifakis
 // This file is part of PhysBAM whose distribution is governed by the license contained in the accompanying file PHYSBAM_COPYRIGHT.txt.
+// OmpSs/OpenMP 4.0 versions by Raul Vidal Ortiz - Barcelona Supercomputing Center
 //#####################################################################
 #ifndef __THREAD_DIVISION_PARAMETERS__
 #define __THREAD_DIVISION_PARAMETERS__

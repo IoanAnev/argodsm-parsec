@@ -1,8 +1,7 @@
 //#####################################################################
 // Copyright 2004-2005, Ron Fedkiw, Joseph Teran, Eftychios Sifakis.
 // This file is part of PhysBAM whose distribution is governed by the license contained in the accompanying file PHYSBAM_COPYRIGHT.txt.
-//    OPENMP - OMPSS
-// Copyright 2014-2015, Raul Vidal - Barcelona Supercomputing Center
+// OmpSs/OpenMP 4.0 versions by Raul Vidal Ortiz - Barcelona Supercomputing Center
 //#####################################################################
 // Class COLLISION_PENALTY_FORCES
 //#####################################################################

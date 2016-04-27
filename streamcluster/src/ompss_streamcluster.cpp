@@ -2,6 +2,7 @@
  * Copyright (C) 2008 Princeton University
  * All rights reserved.
  * Authors: Jia Deng, Gilberto Contreras
+ * OmpSs/OpenMP 4.0 versions written by Raul Vidal and Dimitrios Chasapis - Barcelona Supercomputing Center
  *
  * streamcluster - Online clustering algorithm
  *

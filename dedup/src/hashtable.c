@@ -1,5 +1,6 @@
 /* Copyright (C) 2004, 2007 Christopher Clark, Princeton University */
 /* Parallelization by Christian Bienia */
+/* OmpSs/OpenMP 4.0 versions written by Dimitrios Chasapis - Barcelona Supercomputing Center */
 
 /*
  * Copyright (c) 2002, 2007 Christopher Clark, Princeton University

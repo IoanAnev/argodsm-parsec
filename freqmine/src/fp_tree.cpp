@@ -6,6 +6,8 @@
 Copyright (c) 2004, Concordia University, Montreal, Canada
 All rights reserved.
 
+OmpSs/OpenMP 4.0 versions written by Dimitrios Chasapis - Barcelona Supercomputing Center
+
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 

@@ -1,11 +1,7 @@
 //#####################################################################
 // Copyright 2003-2006, Zhaosheng Bao, Ron Fedkiw, Geoffrey Irving, Igor Neverov, Eftychios Sifakis.
 // This file is part of PhysBAM whose distribution is governed by the license contained in the accompanying file PHYSBAM_COPYRIGHT.txt.
-/*
-    OPENMP - OMPSS
-	Copyright 2014-2015 Raul Vidal Ortiz - Barcelona Supercomputing Center
-	Distributed under the same license as the rest of PhysBAM
-*/
+// OmpSs/OpenMP 4.0 versions by Raul Vidal Ortiz - Barcelona Supercomputing Center
 //#####################################################################
 // Class DEFORMABLE_OBJECT
 //#####################################################################

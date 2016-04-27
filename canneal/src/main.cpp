@@ -1,7 +1,8 @@
 // main.cpp
 //
 // Created by Daniel Schwartz-Narbonne on 13/04/07.
-// Modified by Christian Bienia
+// Modified by Christian Bienia for the PARSEC suite
+// OmpSs/OpenMP 4.0 versions written by Dimitrios Chasapis - Barcelona Supercomputing Center
 //
 // Copyright 2007-2008 Princeton University
 // All rights reserved.

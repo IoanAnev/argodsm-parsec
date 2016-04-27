@@ -2,6 +2,7 @@
 //Routines to compute various security prices using HJM framework (via Simulation).
 //Authors: Mark Broadie, Jatin Dewanwala
 //Collaborator: Mikhail Smelyanskiy, Jike Chong, Intel
+//OmpSs/OpenMP 4.0 versions written by Dimitrios Chasapis - Barcelona Supercomputing Center
 
 #include <stdio.h>
 #include <stdlib.h>
