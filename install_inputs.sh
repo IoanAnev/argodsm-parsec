@@ -24,4 +24,4 @@ done
 echo -e "\033[32mDone\033[m"
 
 
-
+rm -rf parsec-3.0
