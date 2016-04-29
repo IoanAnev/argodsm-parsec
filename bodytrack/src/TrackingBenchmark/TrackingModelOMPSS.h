@@ -12,7 +12,7 @@
 //  description : Observation model for kinematic tree body 
 //				  tracking threaded with OpenMP.
 //				  
-//  modified : 
+//  modified : Dimitrios Chasapis, Mark Casas - Barcelona Supercomputing Center 
 //--------------------------------------------------------------
 
 #ifndef TRACKINGMODELOMPSS_H

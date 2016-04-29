@@ -12,7 +12,7 @@
 //  description : Observation model for kinematic tree body 
 //				  tracking threaded with OpenMP.
 //				  
-//  modified : Dimitrios Chasapis - dimitrios.chasapis@bsc.es
+//  modified : Dimitrios Chasapis, Marc Casas - Barcelona Supercomputing Center
 //--------------------------------------------------------------
 
 #if defined(HAVE_CONFIG_H)

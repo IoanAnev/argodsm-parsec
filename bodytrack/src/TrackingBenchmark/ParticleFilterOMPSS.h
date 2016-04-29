@@ -13,7 +13,7 @@
 //  description : OpenMP parallelized version of the particle filter
 //					object derived from ParticleFilter.h
 //		
-//  modified : 
+//  modified : Dimitrios Chasapis, Marc Casas - Barcelona Supercomputing Center 
 //--------------------------------------------------------------------------
 
 #ifndef PARTICLEFILTEROMP_H

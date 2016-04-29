@@ -13,14 +13,14 @@
 //				  inputs from disk and runs the tracking
 //				  particle filter.
 //
-//				  Currently contains 3 versions :
-//				  Single threaded, OpenMP, and Posix threads.
+//				  Currently contains 4 versions :
+//				  Single threaded, OpenMP, Posix threads and OmpSs.
 //				  They are kept separate for readability.
 //
 //				  Thread methods supported are selected by the 
-//				  #defines USE_OPENMP, USE_THREADS or USE_TBB. 
+//				  #defines USE_OPENMP, USE_THREADS ,USE_TBB or USE_OMPSS. 
 //
-//  modified : 
+//  modified : Dimitrios Chasapis, Marc Casas - Barcelona Supercomputing Center
 //--------------------------------------------------------------
 
 #if defined(HAVE_CONFIG_H)
@@ -37,7 +37,6 @@
 typedef struct timeval timer;
 #define TIME(X) gettimeofday(&X, NULL);
 
-//#include "/apps/CEPBATOOLS/extrae/latest/default/64/include/extrae_user_events.h"
 
 //Add defines USE_OMPSS, USE_OPENMP, USE_THREADS or USE_TBB for threaded versions if not using config file (Windows).
 //#define USE_OMPS
