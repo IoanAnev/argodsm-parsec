@@ -3,6 +3,8 @@ AC_CONFIG_SRCDIR([TrackingBenchmark/main.cpp])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 
+AM_PROG_AR
+
 # Arguments
 AC_ARG_ENABLE([gprof], AC_HELP_STRING([--enable-gprof], [add profiling code for gprof @<:@default=no@:>@]), [], [enable_gprof=no])
 AC_ARG_ENABLE([threads], AC_HELP_STRING([--enable-threads], [enable conventional threading @<:@default=no@:>@]), [], [enable_threads=no])

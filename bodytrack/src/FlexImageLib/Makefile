@@ -82,10 +82,7 @@ subdir = FlexImageLib
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -179,23 +176,23 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /home/bscuser/RoMoL/parsec-ompss/code/bodytrack/src/missing aclocal-1.13
+ACLOCAL = ${SHELL} /home/bscuser/parsec-ompss/bodytrack/src/missing aclocal-1.13
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
 AR = ar
-AUTOCONF = ${SHELL} /home/bscuser/RoMoL/parsec-ompss/code/bodytrack/src/missing autoconf
-AUTOHEADER = ${SHELL} /home/bscuser/RoMoL/parsec-ompss/code/bodytrack/src/missing autoheader
-AUTOMAKE = ${SHELL} /home/bscuser/RoMoL/parsec-ompss/code/bodytrack/src/missing automake-1.13
+AUTOCONF = ${SHELL} /home/bscuser/parsec-ompss/bodytrack/src/missing autoconf
+AUTOHEADER = ${SHELL} /home/bscuser/parsec-ompss/bodytrack/src/missing autoheader
+AUTOMAKE = ${SHELL} /home/bscuser/parsec-ompss/bodytrack/src/missing automake-1.13
 AWK = gawk
-CC = mcc
+CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS =  -O3 -g -funroll-loops -fprefetch-loop-arrays -static-libgcc -Wl,--hash-style=both,--as-needed  --ompss --no-copy-deps --instrument
-CPP = mcc -E
+CFLAGS =  -O3 -g -funroll-loops -fprefetch-loop-arrays -static-libgcc -Wl,--hash-style=both,--as-needed 
+CPP = gcc -E
 CPPFLAGS = 
 CXX = mcxx
-CXXCPP = mcxx -E
+CXXCPP = g++ -E
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions -static-libgcc -Wl,--hash-style=both,--as-needed  --ompss --no-copy-deps --instrument -Wall -Wno-unknown-pragmas
+CXXFLAGS = -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions -static-libgcc -Wl,--hash-style=both,--as-needed  --ompss -Wall -Wno-unknown-pragmas
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
@@ -207,7 +204,6 @@ ECHO_N = -n
 ECHO_T = 
 EGREP = /usr/bin/grep -E
 ENABLE_OMPSS = 
-ENABLE_OMPTasks = 
 ENABLE_OPENMP = 
 ENABLE_TBB = 
 ENABLE_THREADS = 
@@ -227,7 +223,7 @@ LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIPO = 
 LN_S = ln -s
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/bscuser/RoMoL/parsec-ompss/code/bodytrack/src/missing makeinfo
+MAKEINFO = ${SHELL} /home/bscuser/parsec-ompss/bodytrack/src/missing makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /usr/bin/mkdir -p
 NM = /usr/bin/nm -B
@@ -249,14 +245,14 @@ SED = /usr/bin/sed
 SET_MAKE = 
 SHELL = /bin/sh
 STRIP = strip
-VERSION = ompss_instr
-abs_builddir = /home/bscuser/RoMoL/parsec-ompss/code/bodytrack/src/FlexImageLib
-abs_srcdir = /home/bscuser/RoMoL/parsec-ompss/code/bodytrack/src/FlexImageLib
-abs_top_builddir = /home/bscuser/RoMoL/parsec-ompss/code/bodytrack/src
-abs_top_srcdir = /home/bscuser/RoMoL/parsec-ompss/code/bodytrack/src
+VERSION = ompss
+abs_builddir = /home/bscuser/parsec-ompss/bodytrack/src/FlexImageLib
+abs_srcdir = /home/bscuser/parsec-ompss/bodytrack/src/FlexImageLib
+abs_top_builddir = /home/bscuser/parsec-ompss/bodytrack/src
+abs_top_srcdir = /home/bscuser/parsec-ompss/bodytrack/src
 ac_ct_AR = ar
-ac_ct_CC = mcc
-ac_ct_CXX = mcxx
+ac_ct_CC = gcc
+ac_ct_CXX = g++
 ac_ct_DUMPBIN = 
 am__include = include
 am__leading_dot = .
@@ -283,7 +279,7 @@ host_vendor = suse
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/bscuser/RoMoL/parsec-ompss/code/bodytrack/src/install-sh
+install_sh = ${SHELL} /home/bscuser/parsec-ompss/bodytrack/src/install-sh
 libdir = ${exec_prefix}/lib64
 libexecdir = ${exec_prefix}/lib
 localedir = ${datarootdir}/locale
@@ -292,7 +288,7 @@ mandir = ${datarootdir}/man
 mkdir_p = $(MKDIR_P)
 oldincludedir = /usr/include
 pdfdir = ${docdir}
-prefix = /home/bscuser/RoMoL/parsec-ompss/code/bodytrack
+prefix = /home/bscuser/parsec-ompss/bodytrack
 program_transform_name = s,x,x,
 psdir = ${docdir}
 sbindir = ${exec_prefix}/sbin

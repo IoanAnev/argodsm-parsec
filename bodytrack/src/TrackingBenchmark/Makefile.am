@@ -28,12 +28,7 @@ bodytrack_SOURCES = DMatrix.h \
                     main.cpp
                     
 if ENABLE_OMPSS
-  bodytrack_SOURCES += Observation.h \
-					   Observation.cpp \
-					   Projection.h \
-					   Projection.cpp \
-					   ParticleFilterOMPSS.h \
-					   ParticleFilterOMPSS.cpp \
+  bodytrack_SOURCES += ParticleFilterOMPSS.h \
                        TrackingModelOMPSS.h \
                        TrackingModelOMPSS.cpp
 endif

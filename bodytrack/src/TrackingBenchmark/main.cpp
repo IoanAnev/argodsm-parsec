@@ -69,8 +69,6 @@ using namespace tbb;
 #include <omp.h>
 #include "ParticleFilterOMPSS.h"
 #include "TrackingModelOMPSS.h"
-#include "Projection.h"
-#include "Observation.h"
 int work_units;
 #endif //USE_OPENMP
 
@@ -100,12 +98,6 @@ inline void WritePose(ostream &f, vector<float> &pose)
 	f << endl;
 }
 
-#pragma omp task priority(0) inout(f) in(*pose) label(WritePose)
-void WritePoseTask(ostream &f, vector<float> *pose)
-{	for(int i = 0; i < (int) (*pose).size(); i++)
-        f << (*pose)[i] << " ";
-    f << endl;
-}
 /*
 *   Function: timevaldiff
 *   ---------------------
@@ -203,57 +195,63 @@ bool ProcessCmdLine(int argc, char **argv, string &path, int &cameras, int &fram
 #if defined(USE_OMPSS)
 int mainOMPSS(string path, int cameras, int frames, int particles, int layers, int threads, bool OutputBMP)
 {
+	timer start, end;
+	
+	cout << "Threading with OmpSs" << endl;
+//  	if(threads < 1)																		//Set number of threads used by OpenMP
+//  		omp_set_num_threads(omp_get_num_procs());										//use number of processors by default
+//  	else
+//  		omp_set_num_threads(threads);
+	
+	work_units=threads;
+	//omp_set_num_threads(threads);
+	cout << "Number of Threads : " << omp_get_max_threads() << endl;
 
-	vector<Observation> observ;
-    for (int i=0; i<cameras; i++){
-        observ.push_back(Observation(path, i));
-    }
+	TrackingModelOMPSS model;
+	if(!model.Initialize(path, cameras, layers))										//Initialize model parameters
+	{	cout << endl << "Error loading initialization data." << endl;
+		return 0;
+	}
+	model.SetNumThreads(threads);
+	model.GetObservation(0);															//load data for first frame
+	ParticleFilterOMPSS<TrackingModel> pf;												//particle filter (OMPSS threaded) instantiated with body tracking model type
+	pf.SetModel(model);																	//set the particle filter model
+	pf.InitializeParticles(particles);													//generate initial set of particles and evaluate the log-likelihoods
 
-    // Background segmented images from each camera
-    vector<BinaryImage> mFGMaps[2];
-    mFGMaps[0].resize(cameras);
-    mFGMaps[1].resize(cameras);
-    //vector<BinaryImage> mFGMaps(cameras);
-    // Edge processed images from each camera
-    vector<FlexImage8u> mEdgeMaps[2];
-    mEdgeMaps[0].resize(cameras);
-    mEdgeMaps[1].resize(cameras);
+	cout << "Using dataset : " << path << endl;
+	cout << particles << " particles with " << layers << " annealing layers" << endl << endl;
+	ofstream outputFileAvg((path + "poses.txt").c_str());
 
+	vector<float> estimate;																//expected pose from particle distribution
 
-    //particle filter instantiated with body tracking model type
-    ParticleFilterOMPSS pf(path, cameras, layers, particles);
+#if defined(ENABLE_PARSEC_HOOKS)
+        __parsec_roi_begin();
+#endif
+	TIME(start);
+	for(int i = 0; i < frames; i++)														//process each set of frames
+	{	cout << "Processing frame " << i << endl;
+		if(!pf.Update((float)i))														//Run particle filter step
+		{	cout << "Error loading observation data" << endl;
+			return 0;
+		}
+		//#pragma omp task inout(outputFileAvg) label(WritePose)
+		{
+			pf.Estimate(estimate);															//get average pose of the particle distribution
+			WritePose(outputFileAvg, estimate);
+			if(OutputBMP)
+				pf.Model().OutputBMP(estimate, i);											//save output bitmap file
+		}
+		//#pragma omp taskwait
+	}
+	#pragma omp taskwait
+	TIME(end);
+	double ctime_msec = (double)timevaldiff(&start, &end);
+  printf("Critical code execution time: %d\n", (int)ctime_msec);
+#if defined(ENABLE_PARSEC_HOOKS)
+        __parsec_roi_end();
+#endif
 
-    // Image projections of the body on all cameras
-    MultiCameraProjectedBody mProjection[2];
-
-    Projection pj(path, cameras);
-
-    cout << "Using dataset : " << path << endl;
-    cout << particles << " particles with " << layers << " annealing layers" << endl << endl;
-    ofstream outputFileAvg((path + "poses.txt").c_str());
-
-    vector<float> estimate[2];                                                         //expected pose from particle distribution
-
-    timer start, end;
-    TIME(start);
-    for(int i = 0; i < frames; i++) {                                               //process each set of frames
-
-        getObservationTaskWrapper(&observ, i, &mFGMaps[i%2], &mEdgeMaps[i%2], &cameras);
-
-        UpdateTaskWrapper(&pf, &i, &mFGMaps[i%2], &mEdgeMaps[i%2], &mProjection[i%2], &estimate[i%2]);             //Run particle filter step
-
-        WritePoseTask(outputFileAvg, &estimate[i%2]);
-
-        if(OutputBMP){
-            createBMPTaskWrapper(&pj, &mProjection[i%2], i);       //save output bitmap file
-        }
-    }
-    #pragma omp taskwait
-    TIME(end);
-    double ctime_msec = (double)timevaldiff(&start, &end);
-    printf("Critical code execution time: %d\n", (int)ctime_msec);
-    return 1;
-
+	return 1;
 }
 #endif
 
