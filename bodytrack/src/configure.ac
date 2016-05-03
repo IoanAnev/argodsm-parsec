@@ -3,6 +3,8 @@ AC_CONFIG_SRCDIR([TrackingBenchmark/main.cpp])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 
+#AM_PROG_AR
+m4_pattern_allow([AM_PROG_AR])
 AM_PROG_AR
 
 # Arguments
