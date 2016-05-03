@@ -14,7 +14,7 @@ LIBDIR = $(ROOT)/lib
 OBJDIR = $(ROOT)/obj
 
 CFLAGS += -I$(INCDIR) -I${PARSEC_LIBS}/gsl/include 
-LDFLAGS += -L$(LIBDIR) -L${PARSEC_LIBS}/gsl/lib -Wl,-rpath,${PARSEC_LIBS}/gsl/lib
+LDFLAGS += -L$(LIBDIR) -L${PARSEC_LIBS}/gsl/lib -L${PARSEC_LIBS}/gsl/lib64 -Wl,-rpath,${PARSEC_LIBS}/gsl/lib -Wl,-rpath,${PARSEC_LIBS}/gsl/lib64
 
 VPATH = $(CURDIR)/src:$(CURDIR)/src/lsh:$(CURDIR)/tools:$(CURDIR)/image:$(CURDIR)/benchmark
 

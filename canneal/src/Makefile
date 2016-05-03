@@ -44,5 +44,6 @@ clean:
 	rm -f *.o $(TARGET)
 
 install: $(TARGET)
+	mkdir -p ../bin
 	cp -f $(TARGET) ../bin/$(TARGET)
 

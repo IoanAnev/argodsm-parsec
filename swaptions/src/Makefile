@@ -53,5 +53,6 @@ clean:
 	rm -f $(OBJS) $(EXEC)
 
 install: $(EXEC)
+	mkdir -p ../bin
 	cp -f $(EXEC) ../bin/$(EXEC)
 	

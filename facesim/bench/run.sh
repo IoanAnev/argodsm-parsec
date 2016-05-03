@@ -11,12 +11,12 @@ fi
 
 #DEFINE ARGS
 case $INPUT in
-  "native") ARGS="-timing -lastframe 100 -inputdir ${ROOT}/facesim/inputs -outputdir Storytelling/output";;
-  "simlarge") ARGS="-timing -lastframe 1 -inputdir ${ROOT}/facesim/inputs -outputdir Storytelling/output";;
-  "simmedium") ARGS="-timing -lastframe 1 -inputdir ${ROOT}/facesim/inputs -outputdir Storytelling/output";;
-  "simsmall") ARGS="-timing -lastframe 1 -inputdir ${ROOT}/facesim/inputs -outputdir Storytelling/output";;
-  "simdev") ARGS="-timing -lastframe 1 -inputdir ${ROOT}/facesim/inputs -outputdir Storytelling/output";;
-  "test") ARGS="-timing -lastframe 1 -inputdir ${ROOT}/facesim/inputs -outputdir Storytelling/output";;
+  "native") ARGS="-timing -lastframe 100 -inputdir ${ROOT}/facesim/inputs -outputdir ${ROOT}/facesim/output/Storytelling/output";;
+  "simlarge") ARGS="-timing -lastframe 1 -inputdir ${ROOT}/facesim/inputs -outputdir ${ROOT}/facesim/output/Storytelling/output";;
+  "simmedium") ARGS="-timing -lastframe 1 -inputdir ${ROOT}/facesim/inputs -outputdir ${ROOT}/facesim/output/Storytelling/output";;
+  "simsmall") ARGS="-timing -lastframe 1 -inputdir ${ROOT}/facesim/inputs -outputdir ${ROOT}/facesim/output/Storytelling/output";;
+  "simdev") ARGS="-timing -lastframe 1 -inputdir ${ROOT}/facesim/inputs -outputdir ${ROOT}/facesim/output/Storytelling/output";;
+  "test") ARGS="-timing -lastframe 1 -inputdir ${ROOT}/facesim/inputs -outputdir ${ROOT}/facesim/output/Storytelling/output";;
 esac
 
 #ADD THREADS/PARTITIONING SCHEME

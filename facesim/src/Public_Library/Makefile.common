@@ -118,9 +118,11 @@ ifneq (,$(filter $(version),$(OMPLIST)))
     LINK_FLAGS+= -fopenmp
 endif
 ifneq (,$(filter $(version),$(OMPSSLIST)))
+	PHYSBAM_CC = plaincxx
     LINK_FLAGS+= --Wn,-xW --ompss
 endif
 ifneq (,$(filter $(version),$(OMPSSLISTI)))
+	PHYSBAM_CC = plaincxx
     LINK_FLAGS+= --Wn,-xW --ompss --instrument
 endif  
 
