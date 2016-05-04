@@ -9,7 +9,7 @@ task-based model easy, and offer important insight to the HPC community in regar
 and programmability of such models.
 
 All task-based implementations included in this distribution (OmpSs and OpenMP 4.0) have been 
-developed by the Barcelond Supercomputing Center. 
+developed by the Barcelona Supercomputing Center. 
 
 List of available task-based implementations in the PARSECSs suite:
 
