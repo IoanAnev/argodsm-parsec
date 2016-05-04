@@ -19,7 +19,7 @@ OmpSs: 		blackscholes, bodytrack, canneal, dedup, facesim, ferret, fluidanimate,
 OpenMP 4.0:	blackscholes, canneal, dedup, facesim, ferret, fluidanimate, freqmine, streamcluster, 
 			swaptions
 
-==== Relevant Publications ====
+==== References ====
 
 Dimitrios Chasapis, Marc Casas, Miquel Moretó, Raul Vidal, Eduard Ayguadé, Jesús Labarta, and Mateo Valero. 2015.
 PARSECSs: Evaluating the Impact of Task Parallelism in the PARSEC Benchmark Suite.
