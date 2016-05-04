@@ -1,9 +1,39 @@
+==== Task-based Implementation ====
+
+PARSECSs is a suite of benchmark applications for parallel architectures. PARSECSs expands the 
+original PARSEC suite with task-based implementations using the OmpSs and/or OpenMP 4.0 programming 
+models. The implementation make use of concepts such as task-parallelism and dataflow relations to 
+achieve maximum performance and offer a diverse set of applications from a wide range of domains. 
+It is designed to use broad concepts of task-parallelism in order to make porting to any generic 
+task-based model easy, and offer important insight to the HPC community in regards to the efficiency 
+and programmability of such models.
+
+All task-based implementations included in this distribution (OmpSs and OpenMP 4.0) have been 
+developed by the Barcelond Supercomputing Center. 
+
+List of available task-based implementations in the PARSECSs suite:
+
+OmpSs: 		blackscholes, bodytrack, canneal, dedup, facesim, ferret, fluidanimate, freqmine, 
+			streamcluster, swaptions, x264
+
+OpenMP 4.0:	blackscholes, canneal, dedup, facesim, ferret, fluidanimate, freqmine, streamcluster, 
+			swaptions
+
+==== Relevant Publications ====
+
+Dimitrios Chasapis, Marc Casas, Miquel Moretó, Raul Vidal, Eduard Ayguadé, Jesús Labarta, and Mateo Valero. 2015.
+PARSECSs: Evaluating the Impact of Task Parallelism in the PARSEC Benchmark Suite.
+ACM Trans. Archit. Code Optim. 12, 4, Article 41 (December 2015), 22 pages. DOI=http://dx.doi.org/10.1145/2829952
+
+R. Vidal, M. Casas, M. Moreto, D. Chasapis, R. Ferrer, X. Martorell, E. Ayguadé, J. Labarta, and M. Valero. 
+Evaluating the Impact of OpenMP 4.0 Extensions on Relevant Parallel Workloads. 
+IWOMP, October 2015, pages 60-72. 
+
 ==== Compiling PARSECSs ====
 
-Before compiling anything the env.sh script must be run. This sets up the variable containing the path to 
-the root directory of the benchmark suite (sets it to the current working directory). 
-In MN it will also load the correct environment modules. 
-To build a benchmark run the
+Before compiling anything the env.sh script must be run. This sets up the variable containing the 
+path to the root directory of the benchmark suite (sets it to the current working directory). 
+In MN it will also load the correct environment modules. To build a benchmark run the
 build.sh script like this:
 
 source env.sh

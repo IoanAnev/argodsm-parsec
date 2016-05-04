@@ -23,7 +23,7 @@ or the database is too sparse.
 =======================================
 Programming Languages & Libraries 
 
-C++ and OpenMP is used to implement this benchmark.
+C++, OpenMP and OmpSs are used to implement this benchmark.
 
 =======================================
 System Requirements:
@@ -57,6 +57,10 @@ Benchmark Author
 Chunrong Lai (chunrong.lai@intel.com)
 Contactor
 Yurong Chen (yurong.chen@intel.com)
+
+OmpSs and OpenMP 4.0 tasks-based versions Author
+
+Dimitrios Chasapis - Barcelona Supercomputing Center (dimitrios.chasapis@bsc.es)
 
 =======================================
 References

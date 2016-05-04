@@ -35,10 +35,41 @@ fine-grain locks are used for that update. Locks are not used when updating
 particles away from boundaries since these updates will never occur
 concurrently.
 
+---------------------------------------
+OmpSs task-based versions:
+
+ * Naive: 		Follows the same scheme as the pthreads version, using only barrier 
+				synchronization
+
+ * Dataflow:	As naive, but use of barriers is reduced by introdcuing dataflow 
+				relations between different tasks.
+
+ * Multipdeps:	This version, default for OmpSs, uses the special multidep construct 
+				which is only available in OmpSs.  Multidep allow the user to specify 
+				more complex dataflow relations reducing the use of barriers to a minimum.
+
+By default, OmpSs version uses the multidep version, if you want to use a different one, 
+you need to modify OBJS variable in Makefile.ompss. 
+
+TARGET   = fluidanimate-ompss
+OBJS     = ompss-multideps-nobar.o cellpool.o
+
+Change ompss-multideps-nobar.o by the name of the corresponding file with .cpp extension.
+
+ 
+note.1: OpenMP 4.0 task-based version is only available in the naive implementation.
+
+note.2: The one using multidependencies requires nanox 0.7.9 and mercurium 1.99.7, or above.
+
+note.3: If you want to try another source, To do a fair comparison, Pthreads must have disabled 
+		the use	of impenetrable wall (comment out #define USE_ImpeneratableWall), as it was 
+		relocating cells to their original grid partition if during simulation ended out of it. 
+		In that way, Fluidanimate pthreads achieved load balance but was altering the simulation.
+
 =======================================
 Programming Languages & Libraries
   
-C++ and pthread is used in this benchmark.
+C++, pthread, OmpSs and OpenMP 4.0 are used in this benchmark.
 
 =======================================
 System Requirements:
@@ -65,6 +96,8 @@ the main functions.
 =======================================
 Revision History
 12/5/06: Richard O. Lee - First version
+01/1/14: Dimitrios Chasapis (BSC) - OmpSs naive version 
+01/5/15: Marc Casas (BSC) - OmpSs dataflow and multidep versions
 
 =======================================
 Author: Richard O. Lee
@@ -78,4 +111,5 @@ M. Müller, D. Charypar, M. Gross, Particle-Based Fluid Simulation for
 Interactive Applications, in Proceedings of ACM SIGGRAPH Symposium on Computer
 Animatio (SCA) 2003, pp 154-159
 (http://graphics.ethz.ch/%7Emattmuel/publications/sca03.pdf)
+
 
