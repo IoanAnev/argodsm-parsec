@@ -153,6 +153,7 @@ int main(int argc, char *argv[])
 	printf("PARSEC Benchmark Suite\n");
 	fflush(NULL);
 
+
 #ifdef ENABLE_PARSEC_HOOKS
    __parsec_bench_begin(__parsec_swaptions);
 #endif
@@ -162,6 +163,10 @@ int main(int argc, char *argv[])
           print_usage(argv[0]);
           exit(1);
         }
+
+#if defined(ENABLE_OMPSS) || defined(ENABLE_OMP)
+	printf("Warning! Argumetn -nt is ignored, use NX_ARGS for OMPSs or OMP_NUM_THREADS for OpenMP 4.0\n");
+#endif
 
         for (int j=1; j<argc; j++) {
 	  if (!strcmp("-sm", argv[j])) {NUM_TRIALS = atoi(argv[++j]);}

@@ -54,6 +54,10 @@ int main(int argc, char** argv) {
         __parsec_bench_begin(__parsec_dedup);
 #endif //ENABLE_PARSEC_HOOKS
 
+#if defined(ENABLE_OMPSS) || defined(ENABLE_OMP)
+	printf("Warning! Argument -t is ignored, use NX_ARGS for OmpSs or OMP_NUM_THREAD for OpenMP 4.0\n");
+#endif
+
   int32 compress = TRUE;
 
   //We force the sha1 sum to be integer-aligned, check that the length of a sha1 sum is a multiple of unsigned int

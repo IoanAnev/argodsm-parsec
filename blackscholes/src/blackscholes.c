@@ -18,6 +18,7 @@
 
 // Multi-threaded pthreads header
 #ifdef ENABLE_THREADS
+#define MAX_THREADS 128
 // Add the following line so that icc 9.0 is compatible with pthread lib.
 #define __thread __threadp
 MAIN_ENV
@@ -44,6 +45,7 @@ using namespace tbb;
 #pragma warning(disable : 4305)
 #pragma warning(disable : 4244)
 #include <windows.h>
+#include MAX_THREADS 128
 #endif
 
 //Precision to use for calculations
@@ -334,7 +336,7 @@ int main (int argc, char **argv)
    __parsec_bench_begin(__parsec_blackscholes);
 #endif
 
-   if (argc != 4)
+   if (argc < 4)
         {
                 printf("Usage:\n\t%s <nthreads> <inputFile> <outputFile>\n", argv[0]);
                 exit(1);

@@ -27,6 +27,8 @@
 #include "fluidview.hpp"
 #endif
 
+#define NTASKS 8
+
 //Uncomment to add code to check that Courant–Friedrichs–Lewy condition is satisfied at runtime
 //#define ENABLE_CFL_CHECK
 
@@ -1228,11 +1230,15 @@ int main(int argc, char *argv[])
 
   if(argc < 4 || argc >= 6)
   {
-    std::cout << "Usage: " << argv[0] << " <threadnum> <framenum> <.fluid input file> [.fluid output file]" << std::endl;
+    std::cout << "Usage: " << argv[0] << " <threadnum> <framenum> <.fluid input file> <.fluid output file> [tasknum]" << std::endl;
     return -1;
   }
 
-  int threadnum = atoi(argv[1]);
+  int threadnum = N_TASKS;
+  if(argc > 5) {
+	threadnum = atoi(argv[5]);	
+  }
+
   int framenum = atoi(argv[2]);
 
   threadnum=threadnum*FACTOR;

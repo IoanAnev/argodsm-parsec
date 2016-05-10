@@ -16,10 +16,9 @@ case $INPUT in
   "test") ARGS="${BENCHPATH}/inputs/in_4.txt ${BENCHPATH}/outputs/prices.txt";;
 esac
 
-if [ $VERSION = "omp" ]
+if [ $VERSION = "omp4" ] || [ $VERSION = "omp3" ]
 then
 	export OMP_NUM_THREADS=${NTHREADS}
 fi
 
-echo $OMP_NUM_THREADS
 NX_ARGS="${EXTRA_ARGS} --threads=${NTHREADS}" ${BENCHPATH}/bin/blackscholes-${VERSION} ${NTHREADS} ${ARGS}

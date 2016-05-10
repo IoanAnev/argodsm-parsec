@@ -334,16 +334,24 @@ int main (int argc, char **argv)
    __parsec_bench_begin(__parsec_blackscholes);
 #endif
 
-   if (argc != 4)
+   if (argc < 4)
         {
-                printf("Usage:\n\t%s <nthreads> <inputFile> <outputFile>\n", argv[0]);
+                printf("Usage:\n\t%s <nthreads> <inputFile> <outputFile> [blocksize]\n", argv[0]);
+                printf("Warning: nthreads is ignored! Use OMP_NUM_THREADS=<nthreads> instead\n");
                 exit(1);
         }
         
     char *inputFile = argv[2];
     char *outputFile = argv[3];
 	int nthreads = atoi(argv[1]);
-	BSIZE = nthreads*BSIZE_UNIT
+	
+	if(argc > 4 ) {
+		BSIZE = atoi(argv[4]);
+	}
+	else {
+		BSIZE = BSIZE_UNIT;
+	}
+
 
 
     //Read input data from file

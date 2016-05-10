@@ -14,6 +14,8 @@
 
 #include <omp.h>
 
+#define NTASKS 8
+
 //#include "parsec_barrier.hpp"
 
 //#include "extrae_user_events.h"
@@ -1304,13 +1306,19 @@ void AdvanceFrameMT(int ntasks)
 
 int main(int argc, char *argv[])
 {
-	if(argc < 4 || argc >= 6)
-	{
-		std::cout << "Usage: " << argv[0] << " <tasknum> <framenum> <.fluid input file> [.fluid output file]" << std::endl;
-		return -1;
-	}
 
-	int tasknum = atoi(argv[1]);
+  if(argc < 4 || argc >= 6)
+  {
+    std::cout << "Usage: " << argv[0] << " <threadnum> <framenum> <.fluid input file> <.fluid output file> [tasknum]" << std::endl;
+    return -1;
+  }
+
+  int threadnum = N_TASKS;
+  if(argc > 5) {
+	threadnum = atoi(argv[5]);	
+  }
+
+
 	int framenum = atoi(argv[2]);
 
 	//Check arguments
