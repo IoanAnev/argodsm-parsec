@@ -29,6 +29,7 @@
 
 using namespace std;
 
+#define DEFAULT_NDIVS 8
 #define MAXNAMESIZE 1024 // max filename length
 #define SEED 1
 /* increase this to reduce probability of random error */
@@ -992,8 +993,9 @@ int main(int argc, char **argv)
   __parsec_bench_begin(__parsec_streamcluster);
 #endif
 
+	printf("argc:%d\n", argc);
   if (argc<11) {
-    fprintf(stderr,"usage: %s k1 k2 d n chunksize clustersize infile outfile nproc ntasks\n",
+    fprintf(stderr,"usage: %s k1 k2 d n chunksize clustersize infile outfile nproc ndivs\n",
 	    argv[0]);
     fprintf(stderr,"  k1:          Min. number of centers allowed\n");
     fprintf(stderr,"  k2:          Max. number of centers allowed\n");
@@ -1003,8 +1005,8 @@ int main(int argc, char **argv)
     fprintf(stderr,"  clustersize: Maximum number of intermediate centers\n");
     fprintf(stderr,"  infile:      Input file (if n<=0)\n");
     fprintf(stderr,"  outfile:     Output file\n");
-    fprintf(stderr,"  nproc:       Number of threads to use (Ignored in OmpSs/OpenMP 4.0 versions)\n");
-    fprintf(stderr,"  ntasks:      Number of tasks to use\n");
+    fprintf(stderr,"  nproc:       Number of threads to use (Ignored in OmpSs/OpenMP 4.0 versions, use NX_ARGS or OMP_NUM_THREADS respectively)\n");
+    fprintf(stderr,"  ndivs:      Number of loop divisions, influencing the total number of tasks used in OmpSs/OpenMP 4.0\n");
     fprintf(stderr,"\n");
     fprintf(stderr, "if n > 0, points will be randomly generated instead of reading from infile.\n");
     exit(1);
@@ -1020,7 +1022,10 @@ int main(int argc, char **argv)
   clustersize = atoi(argv[6]);
   strcpy(infilename, argv[7]);
   strcpy(outfilename, argv[8]);
-  nproc = atoi(argv[10]);
+  if(argc < 10)
+  	nproc = DEFAULT_NDIVS;
+  else
+	nproc = atoi(argv[10]);
 
   /*Requires Nanox runtime*/
   nanos_get_num_sockets(&NUMANODES);

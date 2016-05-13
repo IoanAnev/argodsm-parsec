@@ -1003,9 +1003,11 @@ int main(int argc, char *argv[])
   __parsec_bench_begin(__parsec_fluidanimate);
 #endif
 
-  if(argc < 4 || argc >= 6)
+std::cout << argc << std::endl;
+  if(argc < 5 || argc >= 7)
   {
-    std::cout << "Usage: " << argv[0] << " <threadnum> <framenum> <.fluid input file> [.fluid output file]" << std::endl;
+    std::cout << "Usage: " << argv[0] << " <threadnum> <framenum> <.fluid input file> <.fluid output file> [ndivs]" << std::endl;
+	std::cout << "Warning: Argument ndivs is ignored in serial version." << std::endl;
     return -1;
   }
 

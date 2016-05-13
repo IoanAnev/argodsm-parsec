@@ -5,6 +5,10 @@ INPUT=$2
 NTHREADS=$3
 EXTRA_ARGS=$4
 
+if [ -z "$NDIVS" ]; then
+    NDIVS=${NTHREADS}
+fi
+
 BENCHPATH=${ROOT}/fluidanimate
 
 case $INPUT in
@@ -16,10 +20,20 @@ case $INPUT in
   "test") ARGS="1 ${BENCHPATH}/inputs/in_5K.fluid ${BENCHPATH}/outputs/out_5K.fluid";;
 esac
 
+mkdir -p ${BENCHPATH}/outputs
 
-if [ $VERSION = "omp" ]
-then
- 	export OMP_NUM_THREADS=${NTHREADS}
+if [ $VERSION = "omp4" ] || [ $VERSION = "omp3" ]; then
+
+	export OMP_NUM_THREADS=${NTHREADS}
+
+elif [ $VERSION = "serial" ]; then
+
+	NTHREADS=1
+
+elif [ $VERSION = "ompss" ] || [ $VERSION="ompss_instr" ]; then
+
+	export NX_ARGS="$EXTRA_ARGS --threads=${NTHREADS}"
+
 fi
 
-NX_ARGS="${EXTRA_ARGS} --threads=${NTHREADS}" ${BENCHPATH}/bin/fluidanimate-${VERSION} ${NTHREADS} ${ARGS}
+${BENCHPATH}/bin/fluidanimate-${VERSION} ${NTHREADS} ${ARGS} ${NDIVS} 

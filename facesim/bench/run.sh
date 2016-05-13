@@ -3,7 +3,8 @@
 VERSION=$1
 INPUT=$2
 NTHREADS=$3
-NDIVS=$4
+EXTRA_ARGS=$4
+#NDIVS=$4
 
 if [ -z "$NDIVS" ]; then
     NDIVS=${NTHREADS}
@@ -19,10 +20,11 @@ case $INPUT in
   "test") ARGS="-timing -lastframe 1 -inputdir ${ROOT}/facesim/inputs -outputdir ${ROOT}/facesim/output/Storytelling/output";;
 esac
 
+mkdir -p ${ROOT}/facesim/outputs
 #ADD THREADS/PARTITIONING SCHEME
 case ${VERSION} in
     ompss*)
-        NX_ARGS="--threads=${NTHREADS} ${NX_ARGS}"
+        NX_ARGS="$EXTRA_ARGS --threads=${NTHREADS} ${NX_ARGS}"
         ARGS+=" -threads ${NDIVS}"
         ;;
     omp* )

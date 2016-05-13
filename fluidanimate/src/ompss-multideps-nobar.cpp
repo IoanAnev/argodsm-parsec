@@ -33,7 +33,7 @@
 #include <hooks.h>
 #endif
 
-#define NTASKS 8
+#define NDIVS 8
 
 using namespace std;
 
@@ -1285,16 +1285,17 @@ int main(int argc, char *argv[])
   __parsec_bench_begin(__parsec_fluidanimate);
 #endif
 
-  if(argc < 4 || argc >= 6)
+  if(argc < 5 || argc >= 7)
   {
-    std::cout << "Usage: " << argv[0] << " <threadnum> <framenum> <.fluid input file> <.fluid output file> [tasknum]" << std::endl;
+    std::cout << "Usage: " << argv[0] << " <threadnum> <framenum> <.fluid input file> <.fluid output file> [ndivs]" << std::endl;
+	std::cout << "Warning: Argument threadnum is ignored! Use NX_ARGS for setting thread number and ndivs argument to influence the number of tasks (usually ndivs works well if it's equal to the number of cores)." << std::endl;
     return -1;
   }
 
 	
-  int threadnum = NTASKS;
-  if(argc > 5) {
-	threadnum = atoi(argv[5]);	
+  int threadnum = NDIVS;
+  if(argc > 6) {
+	threadnum = atoi(argv[6]);	
   }
   
   int framenum = atoi(argv[2]);
@@ -1303,7 +1304,7 @@ int main(int argc, char *argv[])
 
   //Check arguments
   if(threadnum < 1) {
-    std::cerr << "<threadnum> must at least be 1" << std::endl;
+    std::cerr << "<ndivs> must at least be 1" << std::endl;
     return -1;
   }
   if(framenum < 1) {

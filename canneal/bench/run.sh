@@ -16,9 +16,21 @@ case $INPUT in
   "test") ARGS="5 100 ${BENCHPATH}/inputs/10.nets 1";;
 esac
 
-if [ $VERSION = "omp" ]
-then
+mkdir -p ${BENCHPATH}/outputs
+
+if [ $VERSION = "omp4" ] || [ $VERSION = "omp3" ]; then
+
 	export OMP_NUM_THREADS=${NTHREADS}
+
+elif [ $VERSION = "serial" ]; then
+
+	NTHREADS=1
+
+elif [ $VERSION = "ompss" ] || [ $VERSION="ompss_instr" ]; then
+
+	export NX_ARGS="$EXTRA_ARGS --threads=${NTHREADS}"
+
 fi
 
-NX_ARGS="${EXTRA_ARGS} --threads=${NTHREADS}" ${BENCHPATH}/bin/canneal-${VERSION} ${NTHREADS} ${ARGS}
+
+${BENCHPATH}/bin/canneal-${VERSION} ${NTHREADS} ${ARGS}

@@ -16,9 +16,18 @@ case $INPUT in
   "test") ARGS="=-ns 1 -sm 5"
 esac
 
-if [ $VERSION = "omp" ]
-then
+if [ $VERSION = "omp4" ] || [ $VERSION = "omp3" ]; then
+
 	export OMP_NUM_THREADS=${NTHREADS}
+
+elif [ $VERSION = "serial" ]; then
+
+	NTHREADS=1
+
+elif [ $VERSION = "ompss" ] || [ $VERSION="ompss_instr" ]; then
+
+	export NX_ARGS="$EXTRA_ARGS --threads=${NTHREADS}"
+
 fi
 
 NX_ARGS="${EXTRA_ARGS} --threads=${NTHREADS}" ${BENCHPATH}/bin/swaptions-${VERSION}  ${ARGS} -nt ${NTHREADS}

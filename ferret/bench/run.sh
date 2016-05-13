@@ -8,18 +8,28 @@ EXTRA_ARGS=$4
 BENCHPATH=${ROOT}/ferret
 
 case $INPUT in
-  "native") ARGS="${BENCHPATH}/inputs/input_native/corel lsh ${BENCHPATH}/inputs/input_native/queries 50 20";;
-  "simlarge") ARGS="${BENCHPATH}/inputs/input_simlarge/corel lsh ${BENCHPATH}/inputs/input_simlarge/queries 10 20";;
-  "simmedium") ARGS="${BENCHPATH}/inputs/input_simmedium/corel lsh ${BENCHPATH}/inputs/input_simmedium/queries 10 20";;
-  "simsmall") ARGS="${BENCHPATH}/inputs/input_simsmall/corel lsh ${BENCHPATH}/inputs/input_simsmall/queries 10 20";;
-  "simdev") ARGS="${BENCHPATH}/inputs/input_simsmdev/corel lsh ${BENCHPATH}/inputs/input_simdev/queries 5 5";;
-  "test") ARGS="${BENCHPATH}/inputs/input_test/corel lsh ${BENCHPATH}/inputs/input_test/queries 5 5";;
+  "native") ARGS="${BENCHPATH}/inputs/corel lsh ${BENCHPATH}/inputs/queries 50 20";;
+  "simlarge") ARGS="${BENCHPATH}/inputs/corel lsh ${BENCHPATH}/inputs/queries 10 20";;
+  "simmedium") ARGS="${BENCHPATH}/inputs/corel lsh ${BENCHPATH}/inputs/queries 10 20";;
+  "simsmall") ARGS="${BENCHPATH}/inputs/corel lsh ${BENCHPATH}/inputs/queries 10 20";;
+  "simdev") ARGS="${BENCHPATH}/inputs/corel lsh ${BENCHPATH}/inputs/queries 5 5";;
+  "test") ARGS="${BENCHPATH}/inputs/corel lsh ${BENCHPATH}/inputs/queries 5 5";;
 esac
 
-if [ $VERSION = "omp" ]
-then
+mkdir -p ${BENCHPATH}/outputs
+
+if [ $VERSION = "omp4" ] || [ $VERSION = "omp3" ]; then
+
 	export OMP_NUM_THREADS=${NTHREADS}
+
+elif [ $VERSION = "serial" ]; then
+
+	NTHREADS=1
+
+elif [ $VERSION = "ompss" ] || [ $VERSION="ompss_instr" ]; then
+
+	export NX_ARGS="$EXTRA_ARGS --threads=${NTHREADS} --disable-ut"
+
 fi
-#export NX_STACK_SIZE=200000
-#echo "${BENCHPATH}/bin/ferret-${VERSION} ${ARGS} ${NTHREADS} ${BENCHPATH}/outputs/output.txt"
-NX_ARGS="${EXTRA_ARGS} --threads=${NTHREADS} --disable-ut" ${BENCHPATH}/bin/ferret-${VERSION} ${ARGS} ${NTHREADS} ${BENCHPATH}/outputs/output.txt
+
+${BENCHPATH}/bin/ferret-${VERSION} ${ARGS} ${NTHREADS} ${BENCHPATH}/outputs/output.txt

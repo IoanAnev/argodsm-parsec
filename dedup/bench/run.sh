@@ -16,10 +16,23 @@ case $INPUT in
 	"simdev") ARGS="-c -p -v -i ${BENCHPATH}/inputs/hamlet.dat -o ${BENCHPATH}/outputs/output.dat.ddp";;
 	"test") ARGS="-c -p -v -i ${BENCHPATH}/inputs/test.dat -o ${BENCHPATH}/outputs/output.dat.ddp";;
 esac
-if [ $VERSION = "ompss" ] || [ $VERSION = "omp" ] 
-then
+
+mkdir -p ${BENCHPATH}/outputs
+
+if [ $VERSION = "omp4" ] || [ $VERSION = "omp3" ]; then
+
 	export OMP_NUM_THREADS=${NTHREADS}
-	NX_ARGS="${EXTRA_ARGS} --threads=${NTHREADS}" ${BENCHPATH}/bin/${BENCHMARK}-${VERSION} $ARGS -t 1
-else
-	${BENCHPATH}/bin/${BENCHMARK}-${VERSION} $ARGS -t ${NTHREADS}
+	NTHREADS=1
+
+elif [ $VERSION = "serial" ]; then
+
+	NTHREADS=1
+
+elif [ $VERSION = "ompss" ] || [ $VERSION="ompss_instr" ]; then
+
+	export NX_ARGS="$EXTRA_ARGS --threads=${NTHREADS}"
+	NTHREADS=1
+
 fi
+
+${BENCHPATH}/bin/${BENCHMARK}-${VERSION} $ARGS -t $NTHREADS

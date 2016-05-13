@@ -16,9 +16,20 @@ case $INPUT in
   "test") ARGS="${BENCHPATH}/inputs/in_4.txt ${BENCHPATH}/outputs/prices.txt";;
 esac
 
-if [ $VERSION = "omp4" ] || [ $VERSION = "omp3" ]
-then
+mkdir -p ${BENCHPATH}/outputs
+
+if [ $VERSION = "omp4" ] || [ $VERSION = "omp3" ]; then
+
 	export OMP_NUM_THREADS=${NTHREADS}
+
+elif [ $VERSION = "serial" ]; then
+
+	NTHREADS=1
+
+elif [ $VERSION = "ompss" ] || [ $VERSION="ompss_instr" ]; then
+
+	export NX_ARGS="$EXTRA_ARGS --threads=${NTHREADS}"
+
 fi
 
-NX_ARGS="${EXTRA_ARGS} --threads=${NTHREADS}" ${BENCHPATH}/bin/blackscholes-${VERSION} ${NTHREADS} ${ARGS}
+${BENCHPATH}/bin/blackscholes-${VERSION} ${NTHREADS} ${ARGS}

@@ -406,8 +406,8 @@ int main (int argc, char *argv[])
 
 	int ret, i;
 
-        printf("PARSEC Benchmark Suite\n");
-        fflush(NULL);
+        printf("PARSEC Benchmark Suite\n");  
+	 	fflush(NULL);
 
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_bench_begin(__parsec_ferret);
@@ -415,7 +415,9 @@ int main (int argc, char *argv[])
 
 	if (argc < 8)
 	{
-		printf("%s <database> <table> <query dir> <top K> <depth> <n> <out>\n", argv[0]); 
+		printf("%s <database> <table> <query dir> <top K> <depth> <n> <out>\n", argv[0]);
+		printf("Warning: Argument n is ignored!\n");
+		printf("Warning: Ferret needs to run with NX_ARGS=\"--disable-ut\" option in OmpSs version!\n");
 		return 0;
 	}
 

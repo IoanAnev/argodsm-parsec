@@ -119,6 +119,7 @@ int main (int argc, char* argv[])
 	STORYTELLING_EXAMPLE<float, float> example;
 	
 	printf("parsing arguments\n");
+	printf("Warning: Argument -threads is ignored in OmpSs and OpenMP 4.0! Use NX_ARGS or OMP_NUM_THREADS, respectively.\n");
     PARSE_ARGS parse_args;
 	parse_args.Add_Integer_Argument ("-restart", 0);
 	parse_args.Add_Integer_Argument ("-lastframe", 300);

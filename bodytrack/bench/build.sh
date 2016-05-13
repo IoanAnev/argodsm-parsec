@@ -2,7 +2,7 @@ VERSION=$1
 
 if [ ${VERSION} = "serial" ]; then
 	cd src
-	autoreconf -fiv
+	status=$(autoreconf -fiv)
 	echo -e "\033[32mConfiguring environment\033[m"
 	status=$( ./configure --prefix=${ROOT}/bodytrack )
 	echo "$status"
@@ -42,7 +42,7 @@ if [ ${VERSION} = "serial" ]; then
 	echo -e "\033[32mDone!\033[m"
 elif [ ${VERSION} = "pthreads" ]; then 
 	cd src
-	autoreconf -fiv
+	status=$(autoreconf -fiv)
 	echo -e "\033[32mConfiguring environment\033[m"
 	status=$(	./configure --enable-threads --prefix=${ROOT}/bodytrack )
 	echo "$status"
@@ -83,7 +83,7 @@ elif [ ${VERSION} = "pthreads" ]; then
 	echo -e "\033[32mDone!\033[m"
 elif [ ${VERSION} = "ompss" ]; then
 	cd src
-	autoreconf -fiv
+	status=$(autoreconf -fiv)
 	echo -e "\033[32mConfiguring environment\033[m"
 	status=$(	./configure --enable-ompss --prefix=${ROOT}/bodytrack )
 	echo "$status"
@@ -124,7 +124,7 @@ elif [ ${VERSION} = "ompss" ]; then
 	echo -e "\033[32mDone!\033[m"
 elif [ ${VERSION} = "ompss_instr" ]; then
 	cd src
-	autoreconf -fiv
+	status=$(autoreconf -fiv)
 	echo -e "\033[32mConfiguring environment\033[m"
 	status=$(	./configure --enable-ompss --enable-ompss_instr --prefix=${ROOT}/bodytrack )
 	echo "$status"
@@ -163,11 +163,11 @@ elif [ ${VERSION} = "ompss_instr" ]; then
 	fi 
 	cd ..
 	echo -e "\033[32mDone!\033[m"
-elif [ ${VERSION} = "omp" ]; then 
+elif [ ${VERSION} = "omp3" ]; then 
 	cd src
-	autoreconf -fiv
+	status=$(autoreconf -fiv)
 	echo -e "\033[32mConfiguring environment\033[m"
-	status=$(	./configure --enable-omp --prefix=${ROOT}/bodytrack )
+	status=$(	./configure --enable-openmp --prefix=${ROOT}/bodytrack )
 	echo "$status"
 	if (echo $status | grep -q "Error"); then
 		echo -e "\033[31mConfiguring Failed!\033[m"

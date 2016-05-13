@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
 #endif //ENABLE_PARSEC_HOOKS
 
 #if defined(ENABLE_OMPSS) || defined(ENABLE_OMP)
-	printf("Warning! Argument -t is ignored, use NX_ARGS for OmpSs or OMP_NUM_THREAD for OpenMP 4.0\n");
+	printf("Warning! Argument -t must be 1, to set number of threads use NX_ARGS for OmpSs or OMP_NUM_THREAD for OpenMP 4.0\n");
 #endif
 
   int32 compress = TRUE;

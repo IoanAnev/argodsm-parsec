@@ -16,11 +16,18 @@ case $INPUT in
   "test") ARGS="${BENCHPATH}/inputs/T10I4D100K_3.dat 1";;
 esac
 
-if [ "$VERSION" == "openmp" ] || [ "$VERSION" = "omp" ]
-then
- 	export OMP_NUM_THREADS=${NTHREADS}
+if [ $VERSION = "omp4" ] || [ $VERSION = "omp3" ]; then
+
+	export OMP_NUM_THREADS=${NTHREADS}
+
+elif [ $VERSION = "serial" ]; then
+
+	NTHREADS=1
+
+elif [ $VERSION = "ompss" ] || [ $VERSION="ompss_instr" ]; then
+
+	export NX_ARGS="$EXTRA_ARGS --threads=${NTHREADS}"
+
 fi
 
-echo $OMP_NUM_THREADS
-
-NX_ARGS="${EXTRA_ARGS} --threads=${NTHREADS}" ${BENCHPATH}/bin/freqmine-${VERSION} ${ARGS}
+${BENCHPATH}/bin/freqmine-${VERSION} ${ARGS}

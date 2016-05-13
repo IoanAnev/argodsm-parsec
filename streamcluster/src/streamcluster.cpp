@@ -2297,8 +2297,8 @@ int main(int argc, char **argv)
   __parsec_bench_begin(__parsec_streamcluster);
 #endif
 
-  if (argc<10) {
-    fprintf(stderr,"usage: %s k1 k2 d n chunksize clustersize infile outfile nproc\n",
+  if (argc<11) {
+    fprintf(stderr,"usage: %s k1 k2 d n chunksize clustersize infile outfile nproc ndivs\n",
 	    argv[0]);
     fprintf(stderr,"  k1:          Min. number of centers allowed\n");
     fprintf(stderr,"  k2:          Max. number of centers allowed\n");
@@ -2309,6 +2309,7 @@ int main(int argc, char **argv)
     fprintf(stderr,"  infile:      Input file (if n<=0)\n");
     fprintf(stderr,"  outfile:     Output file\n");
     fprintf(stderr,"  nproc:       Number of threads to use\n");
+    fprintf(stderr,"  ndivs:       Number of loop divisions, influencing the total number of tasks used in OmpSs/OpenMP 4.0 (ignored in other versions)\n");
     fprintf(stderr,"\n");
     fprintf(stderr, "if n > 0, points will be randomly generated instead of reading from infile.\n");
     exit(1);

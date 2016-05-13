@@ -436,6 +436,7 @@ int main (int argc, char *argv[])
 	if (argc < 8)
 	{
 		printf("%s <database> <table> <query dir> <top K> <depth> <n> <out>\n", argv[0]); 
+		printf("Warning: Argument n is ignored!\n");
 		return 0;
 	}
 
