@@ -135,7 +135,7 @@ bool ProcessCmdLine(int argc, char **argv, string &path, int &cameras, int &fram
 #endif
 				usage += string("                       4 = OmpSs                    ");
 #ifdef USE_OMPSS
-        usage += string("\n");
+        usage += string("Warning! Argument -nt is ignored, use NX_ARGS to set the number of threads.\n");
 #else
         usage += string("(unavailable)\n");
 #endif

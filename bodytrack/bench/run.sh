@@ -16,9 +16,18 @@ case $INPUT in
   "test") ARGS="${BENCHPATH}/inputs/sequenceB_1 4 1 100 3 0";;
 esac
 
-if [ $VERSION = "omp" ]
-then
- 	export OMP_NUM_THREADS=${NTHREADS}
+if [ $VERSION = "omp4" ] || [ $VERSION = "omp3" ]; then
+
+	export OMP_NUM_THREADS=${NTHREADS}
+
+elif [ $VERSION = "serial" ]; then
+
+	NTHREADS=1
+
+elif [ $VERSION = "ompss" ] || [ $VERSION="ompss_instr" ]; then
+
+	export NX_ARGS="$EXTRA_ARGS --threads=${NTHREADS}"
+
 fi
 
-NX_ARGS="${EXTRA_ARGS} --threads=${NTHREADS}" ${BENCHPATH}/bin/bodytrack-${VERSION} ${ARGS} ${NTHREADS} 
+${BENCHPATH}/bin/bodytrack-${VERSION} ${ARGS} ${NTHREADS} 

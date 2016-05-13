@@ -4,6 +4,10 @@ INPUT=$2
 NTHREADS=$3
 EXTRA_ARGS=$4
 
+if [ -z "$NDIVS" ]; then
+    NDIVS=${NTHREADS}
+fi
+
 BENCHPATH=${ROOT}/${BENCHMARK}
 case $INPUT in
   "native") ARGS="--quiet --qp 20 --partitions b8x8,i4x4 --ref 5 --direct auto --b-pyramid --weightb --mixed-refs --no-fast-pskip --me umh --subme 7 --analyse b8x8,i4x4 -o eledream.264 ${BENCHPATH}/inputs/eledream_1920x1080_512.y4m --threads ${NTHREADS}";;
@@ -14,10 +18,18 @@ case $INPUT in
   "test") ARGS="--quiet --qp 20 --partitions b8x8,i4x4 --ref 5 --direct auto --b-pyramid --weightb --mixed-refs --no-fast-pskip --me umh --subme 7 --analyse b8x8,i4x4 -o eledream.264 ${BENCHPATH}/inputs/eledream_32x18_1.y4m --threads ${NTHREADS}";;
 esac
 
-if [ $VERSION = "ompss" ] || [ $VERSION = "omp" ] 
-then
+if [ $VERSION = "omp4" ] || [ $VERSION = "omp3" ]; then
+
 	export OMP_NUM_THREADS=${NTHREADS}
-	NX_ARGS="${EXTRA_ARGS} --enable-yield --yields=${NTHREADS} --threads=${NTHREADS}" ${BENCHPATH}/bin/${BENCHMARK}-${VERSION} $ARGS
-else
-	${BENCHPATH}/bin/${BENCHMARK}-${VERSION} $ARGS
+
+elif [ $VERSION = "serial" ]; then
+
+	NTHREADS=1
+
+elif [ $VERSION = "ompss" ] || [ $VERSION="ompss_instr" ]; then
+	
+	export NX_ARGS="${EXTRA_ARGS} --enable-yield --yields=${NTHREADS} --threads=${NTHREADS}" 
+
 fi
+
+${BENCHPATH}/bin/${BENCHMARK}-${VERSION} $ARGS 

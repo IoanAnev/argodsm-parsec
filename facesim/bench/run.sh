@@ -25,15 +25,15 @@ mkdir -p ${ROOT}/facesim/outputs
 case ${VERSION} in
     ompss*)
         NX_ARGS="$EXTRA_ARGS --threads=${NTHREADS} ${NX_ARGS}"
-        ARGS+=" -threads ${NDIVS}"
         ;;
     omp* )
 	    export OMP_NUM_THREADS=${NTHREADS}
-        ARGS+=" -threads ${NDIVS}"
         ;;
-    pthreads* | serial*)
-        ARGS+=" -threads ${NTHREADS}"
+    pthreads*)
         ;;
+	serial*)
+		NTHREADS=1
+		;;
     *)
         echo -e "\033[0;31mVERSION = $VERSION not correct, stopping $BENCHID run\033[0m"
         exit
@@ -42,6 +42,6 @@ esac
 
 
 #RUN PROGRAM
-${ROOT}/facesim/bin/facesim-${VERSION} ${ARGS}
+${ROOT}/facesim/bin/facesim-${VERSION} ${ARGS} -threads ${NTHREADS} -ndivs ${NDIVS} 
 
 

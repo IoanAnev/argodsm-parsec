@@ -12,8 +12,8 @@ AC_ARG_ENABLE([gprof], AC_HELP_STRING([--enable-gprof], [add profiling code for 
 AC_ARG_ENABLE([threads], AC_HELP_STRING([--enable-threads], [enable conventional threading @<:@default=no@:>@]), [], [enable_threads=no])
 AC_ARG_ENABLE([openmp], AC_HELP_STRING([--enable-openmp], [enable OpenMP threading @<:@default=no@:>@]), [], [enable_openmp=no])
 AC_ARG_ENABLE([tbb], AC_HELP_STRING([--enable-tbb], [enable Intel TBB threading @<:@default=no@:>@]), [], [enable_tbb=no])
-AC_ARG_ENABLE([ompss], AC_HELP_STRING([--enable-ompss], [enable OmpSs threading @<:@default=no@:>@]), [], [enable_ompss=yes])
-AC_ARG_ENABLE([ompss_instr], AC_HELP_STRING([--enable-ompss_instr], [enable instrumented OmpSs threading @<:@default=yes@:>@]), [], [enable_ompss_instr=no])
+AC_ARG_ENABLE([ompss], AC_HELP_STRING([--enable-ompss], [enable OmpSs threading @<:@default=no@:>@]), [], [enable_ompss=no])
+AC_ARG_ENABLE([ompss_instr], AC_HELP_STRING([--enable-ompss_instr], [enable instrumented OmpSs threading @<:@default=no@:>@]), [], [enable_ompss_instr=no])
 
 # Checks for programs.
 AC_PROG_LIBTOOL

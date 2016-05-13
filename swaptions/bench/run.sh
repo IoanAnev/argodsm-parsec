@@ -30,4 +30,4 @@ elif [ $VERSION = "ompss" ] || [ $VERSION="ompss_instr" ]; then
 
 fi
 
-NX_ARGS="${EXTRA_ARGS} --threads=${NTHREADS}" ${BENCHPATH}/bin/swaptions-${VERSION}  ${ARGS} -nt ${NTHREADS}
+${BENCHPATH}/bin/swaptions-${VERSION}  ${ARGS} -nt ${NTHREADS}

@@ -365,7 +365,8 @@ static void Help( x264_param_t *defaults, int b_longhelp )
     H0( "      --quiet                 Quiet Mode\n" );
     H0( "      --no-psnr               Disable PSNR computation\n" );
     H0( "      --no-ssim               Disable SSIM computation\n" );
-    H0( "      --threads <integer>     Parallel encoding\n" );
+    H0( "      --threads <integer>     Parallel encoding (Argument is ignoredin OmpSs/OpenMP 4.0.  Use NX_ARGS and OMP_NUM_THREADS, respectively.)\n" );
+    H0( "      --ndivs <integer>       Parallel encoding (OmpSs/OpenMP 4.0 versions)\n" );
     H0( "      --thread-input          Run Avisynth in its own thread\n" );
     H1( "      --non-deterministic     Slightly improve quality of SMP, at the cost of repeatability\n" );
     H1( "      --asm <integer>         Override CPU detection\n" );
@@ -491,6 +492,7 @@ static int  Parse( int argc, char **argv,
             { "zones",   required_argument, NULL, 0 },
             { "qpfile",  required_argument, NULL, OPT_QPFILE },
             { "threads", required_argument, NULL, 0 },
+            { "ndivs", required_argument, NULL, 8 },
             { "thread-input", no_argument,  NULL, OPT_THREAD_INPUT },
             { "non-deterministic", no_argument, NULL, 0 },
             { "no-psnr", no_argument,       NULL, 0 },

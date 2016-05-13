@@ -127,6 +127,7 @@ int main (int argc, char* argv[])
 	parse_args.Add_Option_Argument ("-timing");
     parse_args.Add_String_Argument("-inputdir",example.data_directory);
     parse_args.Add_String_Argument("-outputdir",example.output_directory);
+	parse_args.Add_Integer_Argument("-ndivs", 8);
 	parse_args.Parse (argc, argv);
 
 
@@ -137,6 +138,15 @@ int main (int argc, char* argv[])
 		printf("%s\n",tmp_buf);
 		if (putenv (tmp_buf) < 0) perror ("putenv");
 	}
+#if defined(ENABLE_OMPSS) || defined(ENABLE_OPENMP) 	
+	if (parse_args.Is_Value_Set ("-ndivs"))
+	{
+		static char tmp_buf[255];
+		sprintf (tmp_buf, "PHYSBAM_THREADS=%d", parse_args.Get_Integer_Value ("-ndivs"));
+		printf("%s\n",tmp_buf);
+		if (putenv (tmp_buf) < 0) perror ("putenv");
+	}
+#endif
 
 	if (parse_args.Is_Value_Set ("-restart"))
 	{
