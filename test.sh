@@ -1,8 +1,9 @@
-#BENCHMARKS='blackscholes bodytrack canneal dedup facesim ferret fluidanimate freqmine streamcluster swaptions x264'
-BENCHMARKS=$1
+BENCHMARKS='blackscholes bodytrack canneal dedup facesim ferret fluidanimate freqmine streamcluster swaptions x264'
+#BENCHMARKS=$1
 VERSIONS='serial pthreads omp3 ompss ompss_instr omp4'
 
-ACTIONS=$2
+ACTIONS='compile run'
+#ACTIONS=$2
 
 input=simlarge
 ncores=2
