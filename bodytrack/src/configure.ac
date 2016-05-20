@@ -66,7 +66,7 @@ AC_SUBST([ENABLE_THREADS])
 if test "x$enable_openmp" == "xyes"; then
   AC_DEFINE([USE_OPENMP], [1], [Define to 1 to enable OpenMP])
   CXXFLAGS="$CXXFLAGS -fopenmp"
-    AC_SUBST(VERSION, omp)
+    AC_SUBST(VERSION, omp3)
 fi
 AM_CONDITIONAL([ENABLE_OPENMP], [test "x$enable_openmp" == "xyes"])
 AC_SUBST([ENABLE_OPENMP])

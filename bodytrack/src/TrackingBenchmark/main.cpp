@@ -14,13 +14,13 @@
 //				  particle filter.
 //
 //				  Currently contains 3 versions :
-//				  Single threaded, OpenMP, and Posix threads.
+//				  Single threaded, OpenMP, Posix threads and OmpSs.
 //				  They are kept separate for readability.
 //
 //				  Thread methods supported are selected by the 
-//				  #defines USE_OPENMP, USE_THREADS or USE_TBB. 
+//				  #defines USE_OPENMP, USE_THREADS, USE_TBB or USE_OMPSS. 
 //
-//  modified : 
+//  modified : Dimitrios Chasapis, Marc Casas - Barcelona Supercomputing Center
 //--------------------------------------------------------------
 
 #if defined(HAVE_CONFIG_H)
@@ -69,8 +69,6 @@ using namespace tbb;
 #include <omp.h>
 #include "ParticleFilterOMPSS.h"
 #include "TrackingModelOMPSS.h"
-#include "Projection.h"
-#include "Observation.h"
 int work_units;
 #endif //USE_OPENMP
 
@@ -100,11 +98,6 @@ inline void WritePose(ostream &f, vector<float> &pose)
 	f << endl;
 }
 
-void WritePoseTask(ostream &f, vector<float> *pose)
-{	for(int i = 0; i < (int) (*pose).size(); i++)
-        f << (*pose)[i] << " ";
-    f << endl;
-}
 /*
 *   Function: timevaldiff
 *   ---------------------
@@ -202,58 +195,87 @@ bool ProcessCmdLine(int argc, char **argv, string &path, int &cameras, int &fram
 #if defined(USE_OMPSS)
 int mainOMPSS(string path, int cameras, int frames, int particles, int layers, int threads, bool OutputBMP)
 {
+	timer start, end;
+	
+	cout << "Threading with OmpSs" << endl;
+//  	if(threads < 1)																		//Set number of threads used by OpenMP
+//  		omp_set_num_threads(omp_get_num_procs());										//use number of processors by default
+//  	else
+//  		omp_set_num_threads(threads);
+	
+	work_units=threads;
+	//omp_set_num_threads(threads);
+	cout << "Number of Threads : " << omp_get_max_threads() << endl;
+	
+	//load data for first frame
+	//ParticleFilterOMPSS<TrackingModel> pf;												//particle filter (OMPSS threaded) instantiated with body tracking model type
+	//pf.SetModel(model);																	//set the particle filter model
+	//pf.InitializeParticles(particles);													//generate initial set of particles and evaluate the log-likelihoods
 
-	vector<Observation> observ;
-    for (int i=0; i<cameras; i++){
-        observ.push_back(Observation(path, i));
+	//ofstream outputFileAvg((path + "poses.txt").c_str());
+
+	TrackingModelOMPSS* model = new TrackingModelOMPSS[frames];
+
+	cout << "Using dataset : " << path << endl;
+	cout << particles << " particles with " << layers << " annealing layers" << endl << endl;
+	//ofstream outputFileAvg((path + "poses.txt").c_str());
+
+	ParticleFilterOMPSS<TrackingModel>* pf = new ParticleFilterOMPSS<TrackingModel>[frames];   
+	vector<float> *estimate  = new vector<float>[frames];
+
+	for(int i = 0; i < frames; i++)								
+  {
+    if(!model[i].Initialize(path, cameras, layers))										//Initialize model parameters
+    {	cout << endl << "Error loading initialization data." << endl;
+    	return 0;
     }
+    model[i].SetNumThreads(threads);
+    model[i].GetObservation(0);		
+    pf[i].SetModel(model[i]);                     
+    pf[i].InitializeParticles(particles);     													//load data for first frame
+  }
 
-    // Background segmented images from each camera
-    vector<BinaryImage> mFGMaps[2];
-    mFGMaps[0].resize(cameras);
-    mFGMaps[1].resize(cameras);
-    //vector<BinaryImage> mFGMaps(cameras);
-    // Edge processed images from each camera
-    vector<FlexImage8u> mEdgeMaps[2];
-    mEdgeMaps[0].resize(cameras);
-    mEdgeMaps[1].resize(cameras);
+#if defined(ENABLE_PARSEC_HOOKS)
+        __parsec_roi_begin();
+#endif
+	TIME(start);
+	bool update[frames];
 
+	//for(int i = 0; i < frames; i++)														//process each set of frames
+	//for(int i = frames-1; i > -1; i--) WORKS!! The oredring of frames does not matter
+	for(int k=0; k < frames; k++ )	
+	{	
+		//printf("k=%d frames=%d \n", k, frames);
+		#pragma omp task out(update[k]) label(Frame) firstprivate(k)
+		{
+			//ofstream outputFileAvg((path + "poses.txt").c_str());
+			//for(int i=k; i<k+frames/16; i++) {
+			update[k] = pf[k].Update((float)k);
+			if(!update[k])														//Run particle filter step
+			{	cout << "Error loading observation data" << endl;
+				return 0;
+			}
+			//}
+		}
+		#pragma omp task inout(update[k]) in(estimate[k]) label(WritePose) fisrtprivate(k)
+		{
+			pf[k].Estimate(estimate[k]);															//get average pose of the particle distribution
+			//WritePose(outputFileAvg, estimate);
+			if(OutputBMP) {
+				pf[k].Model().OutputBMP(estimate[k], k);											//save output bitmap filea
+			}
+		}
+	}
+	#pragma omp taskwait
 
-    //particle filter instantiated with body tracking model type
-    ParticleFilterOMPSS pf(path, cameras, layers, particles);
-
-    // Image projections of the body on all cameras
-    MultiCameraProjectedBody mProjection[2];
-
-    Projection pj(path, cameras);
-
-    cout << "Using dataset : " << path << endl;
-    cout << particles << " particles with " << layers << " annealing layers" << endl << endl;
-    ofstream outputFileAvg((path + "poses.txt").c_str());
-
-    vector<float> estimate[2];                                                         //expected pose from particle distribution
-
-    timer start, end;
-    TIME(start);
-    for(int i = 0; i < frames; i++) {                                               //process each set of frames
-
-        getObservationTaskWrapper(&observ, i, &mFGMaps[i%2], &mEdgeMaps[i%2], &cameras);
-
-        UpdateTaskWrapper(&pf, &i, &mFGMaps[i%2], &mEdgeMaps[i%2], &mProjection[i%2], &estimate[i%2]);             //Run particle filter step
-
-		#pragma omp task priority(0) inout(f) in(*pose) label(WritePose)
-        WritePoseTask(outputFileAvg, &estimate[i%2]);
-
-        if(OutputBMP){
-            createBMPTaskWrapper(&pj, &mProjection[i%2], i);       //save output bitmap file
-        }
-    }
-    #pragma omp taskwait
-    TIME(end);
-    double ctime_msec = (double)timevaldiff(&start, &end);
-    printf("Critical code execution time: %d\n", (int)ctime_msec);
-    return 1;
-
+	TIME(end);
+	double ctime_msec = (double)timevaldiff(&start, &end);
+  printf("Critical code execution time: %d\n", (int)ctime_msec);
+#if defined(ENABLE_PARSEC_HOOKS)
+        __parsec_roi_end();
+#endif
+	
+	return 1;
 }
 #endif
 
