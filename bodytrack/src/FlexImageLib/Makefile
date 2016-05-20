@@ -189,10 +189,10 @@ CCDEPMODE = depmode=gcc3
 CFLAGS =  -O3 -g -funroll-loops -fprefetch-loop-arrays -static-libgcc -Wl,--hash-style=both,--as-needed 
 CPP = gcc -E
 CPPFLAGS = 
-CXX = mcxx
+CXX = g++
 CXXCPP = g++ -E
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions -static-libgcc -Wl,--hash-style=both,--as-needed  --ompss -Wall -Wno-unknown-pragmas
+CXXFLAGS = -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions -static-libgcc -Wl,--hash-style=both,--as-needed  -fopenmp -Wall -Wno-unknown-pragmas
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
@@ -245,7 +245,7 @@ SED = /usr/bin/sed
 SET_MAKE = 
 SHELL = /bin/sh
 STRIP = strip
-VERSION = ompss
+VERSION = omp
 abs_builddir = /home/bscuser/parsec-ompss/bodytrack/src/FlexImageLib
 abs_srcdir = /home/bscuser/parsec-ompss/bodytrack/src/FlexImageLib
 abs_top_builddir = /home/bscuser/parsec-ompss/bodytrack/src

@@ -28,9 +28,14 @@ bodytrack_SOURCES = DMatrix.h \
                     main.cpp
                     
 if ENABLE_OMPSS
-  bodytrack_SOURCES += ParticleFilterOMPSS.h \
-                       TrackingModelOMPSS.h \
-                       TrackingModelOMPSS.cpp
+  bodytrack_SOURCES +=	Observation.h \
+						Observation.cpp \
+						Projection.h \
+						Projection.cpp \
+						ParticleFilterOMPSS.h \
+						ParticleFilterOMPSS.cpp \
+						TrackingModelOMPSS.h \
+						TrackingModelOMPSS.cpp
 endif
                        
 if ENABLE_OPENMP
@@ -55,7 +60,7 @@ if ENABLE_TBB
                        TrackingModelTBB.cpp
 endif
 
-bodytrack_LDADD = ../FlexImageLib/libflex.la -lm
+bodytrack_LDADD = ../FlexImageLib/libflex.la -lm -L/apps/CEPBATOOLS/extrae/latest/default/64/lib/ -lnanostrace
 
 if ENABLE_THREADS
   bodytrack_LDADD += threads/libthreads.la
