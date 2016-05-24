@@ -1298,13 +1298,18 @@ int main(int argc, char *argv[])
   InitVisualizationMode(&argc, argv, &AdvanceFrameVisualization, &numCells, &cells, &cnumPars);
 #endif
 
-  //_parsec_roi_begin();
+#ifdef ENABLE_PARSEC_HOOKS
+  _parsec_roi_begin();
+#endif
 
   int startt = time(NULL);
   AdvanceFramesMT(framenum,threadnum);
   #pragma omp taskwait
 
-  //_parsec_roi_end();
+#ifdef ENABLE_PARSEC_HOOKS
+  _parsec_roi_end();
+#endif
+
   std::cout << "Critical code execution time: " << time(NULL) - startt << std::endl;
 
   if(argc > 4)
