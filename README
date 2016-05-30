@@ -16,8 +16,7 @@ List of available task-based implementations in the PARSECSs suite:
 OmpSs: 		blackscholes, bodytrack, canneal, dedup, facesim, ferret, fluidanimate, freqmine, 
 			streamcluster, swaptions, x264
 
-OpenMP 4.0:	blackscholes, canneal, dedup, facesim, ferret, fluidanimate, freqmine, streamcluster, 
-			swaptions
+OpenMP 4.0:	blackscholes, canneal, dedup, facesim, ferret, fluidanimate, freqmine, swaptions
 
 ==== References ====
 
@@ -110,3 +109,4 @@ In each benchmark folder a parsec folder exists that contains the correct input 
 inputs (test, small, medium, large, native).  You will need to download the input files from http://parsec.cs.princeton.edu/download.htm 
 and add them in the input folder of the corresponding benchmark.
 
+Warning! When running ferret with OmpSs you must use --disable-ut in NX_ARGS. In x264 you also need to use --enable-yield --yields= to NX_ARGS, to avoid segmentation faults. 
