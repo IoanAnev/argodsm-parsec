@@ -1,5 +1,4 @@
-BENCHMARKS='blackscholes'
-#BENCHMARKS='blackscholes bodytrack canneal dedup facesim ferret fluidanimate freqmine streamcluster swaptions x264'
+BENCHMARKS='blackscholes bodytrack canneal dedup facesim ferret fluidanimate freqmine streamcluster swaptions x264'
 #BENCHMARKS=$1
 VERSIONS='serial pthreads omp3 ompss ompss_instr omp4'
 
@@ -77,6 +76,5 @@ echo Total execute bencmark fail\(s\): $FAIL_EXECUTE
 
 let FAIL_TOTAL=$FAIL_COMPILE+$FAIL_EXECUTE
 
-#exit $FAIL_TOTAL
-exit 0
+exit $FAIL_TOTAL
 
