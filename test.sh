@@ -1,4 +1,5 @@
-BENCHMARKS='blackscholes bodytrack canneal dedup facesim ferret fluidanimate freqmine streamcluster swaptions x264'
+BENCHMARKS='blackscholes'
+#BENCHMARKS='blackscholes bodytrack canneal dedup facesim ferret fluidanimate freqmine streamcluster swaptions x264'
 #BENCHMARKS=$1
 VERSIONS='serial pthreads omp3 ompss ompss_instr omp4'
 
@@ -8,6 +9,8 @@ ACTIONS='compile run'
 input=simlarge
 ncores=2
 
+FAIL_COMPILE=0
+FAIL_EXECUTE=0
 
 for action in $ACTIONS; do
 
@@ -24,6 +27,7 @@ case $action in
 					
 					if (echo $status | grep -q -E "Compilation Failed!|Installation Failed!"); then
 						printf '\t* %10s\t\033[31mFAILED!\033[m\n' "${version}"
+                  let FAIL_COMPILE=FAIL_COMPILE+1
 					elif (echo $status | grep -q "version not supported!"); then
 						printf '\t* %10s\t\033[33mNOT SUPPORTED!\033[m\n' "${version}"
 					else
@@ -50,6 +54,7 @@ case $action in
 				
 				if ! (${ROOT}/${bench}/bench/run.sh ${version} ${input} ${ncores} 1>> exec_log.err 2>> exec_log.err); then
 					printf '\t* %10s\t\033[31mFAILED!\033[m\n' "${version}"
+                  let FAIL_EXECUTE=FAIL_EXECUTE+1
 				else
 					printf '\t* %10s\t\033[32mPASSED!\033[m\n' "${version}"
 				fi
@@ -66,3 +71,10 @@ case $action in
 esac
 
 done
+
+echo Total compile bencmark fail\(s\): $FAIL_COMPILE
+echo Total execute bencmark fail\(s\): $FAIL_EXECUTE
+
+let FAIL_TOTAL=$FAIL_COMPILE+$FAIL_EXECUTE
+
+exit $FAIL_TOTAL
