@@ -5,18 +5,25 @@
 
 PREFIX=${ROOT}/parseclibs/hooks/
 
-AR=ar
-RANLIB=ranlib
+### If we are not compiling on an arm v8, we must use cross tools ###
+ifneq ($(shell uname -m), aarch64)
+	CROSS_COMPILE?=aarch64-linux-gnu-
+endif
+CC=$(CROSS_COMPILE)gcc
+AS=$(CROSS_COMPILE)as
+LD=$(CROSS_COMPILE)ld
+AR=$(CROSS_COMPILE)ar
+
+RANLIB=$(CROSS_COMPILE)ranlib
 
 TARGET=libhooks.a
 OBJS=hooks.o
 INCLUDEDIR=include
 
 CFLAGS += -I${GEM5_PATH}/util/m5 -DENABLE_GEM5
-OBJS += ${GEM5_PATH}/util/m5/m5op_x86.o
 
 all: $(OBJS)
-	$(AR) rcs $(TARGET) $(OBJS)
+	$(AR) rcs $(TARGET) $(OBJS) ${GEM5_PATH}/util/m5/m5op_arm_A64.o
 	$(RANLIB) $(TARGET)
 
 %.o : %.c

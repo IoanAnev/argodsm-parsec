@@ -171,6 +171,10 @@ void __parsec_bench_end() {
 }
 
 void __parsec_roi_begin() {
+  #if ENABLE_GEM5
+  m5_checkpoint(0,0);
+  #endif
+
   #if DEBUG
   num_roi_begins++;
   assert(num_bench_begins==1);
@@ -198,11 +202,15 @@ void __parsec_roi_begin() {
 
   #if ENABLE_GEM5
   m5_reset_stats(0,0);
-  #endif //ENABLE_GEM5
+  #endif
 }
 
 
 void __parsec_roi_end() {
+  #if ENABLE_GEM5
+  m5_dump_stats(0,0);
+  #endif
+
   #if DEBUG
   num_roi_ends++;
   assert(num_bench_begins==1);
@@ -225,11 +233,19 @@ void __parsec_roi_end() {
   time_end = (double)t.tv_sec+(double)t.tv_usec*1e-6;
   #endif //ENABLE_TIMING
 
-  #if ENABLE_GEM5
-  m5_dump_stats(0,0);
-  #endif //ENABLE_GEM5
-
   printf(HOOKS_PREFIX" Leaving ROI\n");
   fflush(NULL);
+
+  #if ENABLE_GEM5
+  m5_exit(10000);
+  #endif
 }
 
+/* These are useful if these hooks are used in fortran codes */
+/* From those you can do: call parsec_roi_begin() */
+void parsec_roi_begin_() {
+    __parsec_roi_begin();
+}
+void parsec_roi_end_() {
+    __parsec_roi_end();
+}
