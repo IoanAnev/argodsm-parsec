@@ -422,11 +422,11 @@ then
 		CFLAGS="--ompss --instrument $CFLAGS -DHAVE_OMPSS"
 		MCFLAGS="$CFLAGS"
 		LDFLAGS="$LDFLAGS -lpthread"
+		EXE="-ompss_instr"
 	else
 		CFLAGS="--ompss $CFLAGS -DHAVE_OMPSS"
 		MCFLAGS="$CFLAGS"
 		LDFLAGS="$LDFLAGS -lpthread"
-		EXE="-ompss_instr"
 	fi
 	if test "$gprof" = "yes"
 	then
