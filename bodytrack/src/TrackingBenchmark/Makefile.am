@@ -55,7 +55,7 @@ if ENABLE_TBB
                        TrackingModelTBB.cpp
 endif
 
-bodytrack_LDADD = ../FlexImageLib/libflex.la -lm -L/apps/CEPBATOOLS/extrae/latest/default/64/lib/ -lnanostrace
+bodytrack_LDADD = ../FlexImageLib/libflex.la -lm
 
 if ENABLE_THREADS
   bodytrack_LDADD += threads/libthreads.la
