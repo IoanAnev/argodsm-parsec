@@ -11,6 +11,8 @@ ncores=2
 FAIL_COMPILE=0
 FAIL_EXECUTE=0
 
+source env.sh
+
 for action in $ACTIONS; do
 
 case $action in 
@@ -43,11 +45,17 @@ case $action in
 		for bench in ${BENCHMARKS}; do
 		
 			echo -e "\n\t${bench}"
-			#untar the correct input archive
-			cd ${ROOT}/${bench}/inputs 2>> exec_log.err
-			tar xvf input_${input}.tar > /dev/null 2>> exec_log.err 
-			cd ${ROOT}
-		
+
+			#check if machine is Minotauro and link input, else try to untar them
+			if [  "${BSC_MACHINE}" == "nvidia" ]; then
+				ln -s /gpfs/scratch/bsc18/bsc18186/parsec-inputs/${bench}/inputs ${ROOT}/${bench}/inputs
+			else
+				#untar the correct input archive
+				cd ${ROOT}/${bench}/inputs 2>> exec_log.err
+				tar xvf input_${input}.tar > /dev/null 2>> exec_log.err 
+				cd ${ROOT}
+			fi
+			
 			for version in ${VERSIONS}; do
 				echo "============================= ${bench}-${version} =============================" >> exec_log.err 
 				
