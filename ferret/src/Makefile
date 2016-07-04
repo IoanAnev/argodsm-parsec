@@ -86,8 +86,8 @@ ifdef version
   endif
 
   ifeq "$(version)" "omp4"
-		TARGET=ferret-omp
-    benchmark_base := ferret-omp4
+    TARGET=ferret-omp4
+    benchmark_base := ferret-omp
     CC = gcc
     CXX = g++
     CFLAGS += -fopenmp 

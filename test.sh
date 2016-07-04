@@ -12,6 +12,11 @@ FAIL_COMPILE=0
 FAIL_EXECUTE=0
 
 source env.sh
+#these are specific to Minotauro and MN
+module unload intel
+module load gcc/4.9.1
+module load ompss/15.06
+
 
 for action in $ACTIONS; do
 

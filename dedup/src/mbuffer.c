@@ -319,7 +319,7 @@ int mbuffer_realloc(mbuffer_t *m, size_t size) {
   PTHREAD_UNLOCK(&locks[lock_hash(m->mcb)]);
 #endif
 	
-#ifdef ENABLE_OMPSS
+#if defined(ENABLE_OMPSS) || defined(ENABLE_OMP)
   OMPSS_UNLOCK(&locks[lock_hash(m->mcb)]);
 #endif
 

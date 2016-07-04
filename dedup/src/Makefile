@@ -47,7 +47,7 @@ ifdef version
 
   ifeq "$(version)" "omp4"
     CC=gcc
-    TARGET=dedup-omp
+    TARGET=dedup-omp4
     CFLAGS += -DENABLE_OMP -DENABLE_OMPSS_LOCKS -fopenmp 
     DEDUP_OBJ += binheap.o tree.o
   endif

@@ -10,7 +10,7 @@ USE_COMPRESSION=yes
 TARGETS = PhysBAM
 TARGET_TYPE = STATIC_LIBRARY
 #OMPLIST contains the version word corresponding to ompss or openmp
-OMPLIST = ompss ompss-i ompss-ws ompss-i-ws ompss-hyb ompss-i-hyb omp omp-ws omp-hyb omp-i omp-i-ws omp-i-hyb
+OMPLIST = ompss ompss_instr ompss-i ompss-ws ompss-i-ws ompss-hyb ompss-i-hyb omp omp-ws omp-hyb omp-i omp-i-ws omp-i-hyb omp4
 
 ifneq (,$(filter $(version),$(OMPLIST)))
 OMPSS_SRC = \

@@ -269,20 +269,20 @@ unsigned int hmgweight(unsigned int x, int *lsb) {
   return weight;
 }
 
-void InitSim(char const *fileName, unsigned int tasknum)
+void InitSim(char const *fileName, unsigned int threadnum)
 {
 	//Compute partitioning based on square root of number of threads
-	//NOTE: Other partition sizes are possible as long as XDIVS * ZDIVS == tasknum,
+	//NOTE: Other partition sizes are possible as long as XDIVS * ZDIVS == threadnum,
 	//      but communication is minimal (and hence optimal) if XDIVS == ZDIVS
 	int lsb;
-	if(hmgweight(tasknum,&lsb) != 1) {
+	if(hmgweight(threadnum,&lsb) != 1) {
 		std::cerr << "Number of tasks must be a power of 2" << std::endl;
 		exit(1);
 	}
 	XDIVS = 1<<(lsb/2);
 	ZDIVS = 1<<(lsb/2);
-	if(XDIVS*ZDIVS != tasknum) XDIVS*=2;
-	assert(XDIVS * ZDIVS == tasknum);
+	if(XDIVS*ZDIVS != threadnum) XDIVS*=2;
+	assert(XDIVS * ZDIVS == threadnum);
 
 	//thread = new pthread_t[NUM_GRIDS];
 	grids = new struct Grid[NUM_GRIDS];
@@ -411,10 +411,10 @@ void InitSim(char const *fileName, unsigned int tasknum)
 	cells2 = new Cell[numCells];
 	cnumPars = new int[numCells];
 	cnumPars2 = new int[numCells];
-	//private_cells = new Cell_list*[tasknum];
+	//private_cells = new Cell_list*[threadnum];
 	assert(cells && cells2 && cnumPars && cnumPars2);
 
-	/*for (int i = 0; i < tasknum; ++i) {
+	/*for (int i = 0; i < threadnum; ++i) {
 		private_cells[i] = NULL;
 	}*/
 
@@ -1309,8 +1309,8 @@ int main(int argc, char *argv[])
 
   if(argc < 5 || argc >= 7)
   {
-	std::cout << "Usage: " << argv[0] << " <threadnum> <framenum> <.fluid input file> <.fluid output file> [ndivs]" << std::endl;
-	std::cout << "Warning: Argument threadnum is ignored! Use OMP_NUM_THREADS for setting thread number and ndivs argument to influence the number of tasks (usually ndivs works well if it's equal to the number of cores)." << std::endl; 
+	std::cout << "Usage: " << argv[0] << " <tasknum> <framenum> <.fluid input file> <.fluid output file> [ndivs]" << std::endl;
+	std::cout << "Warning: Argument tasknum is ignored! Use OMP_NUM_THREADS for setting thread number and ndivs argument to influence the number of tasks (usually ndivs works well if it's equal to the number of cores)." << std::endl; 
     return -1;
   }
 
@@ -1323,7 +1323,7 @@ int main(int argc, char *argv[])
 	int framenum = atoi(argv[2]);
 
 	//Check arguments
-	if(tasknum < 1) {
+	if(threadnum < 1) {
 		std::cerr << "<ndivs> must at least be 1" << std::endl;
 		return -1;
 	}
@@ -1332,21 +1332,21 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	InitSim(argv[3], tasknum);
+	InitSim(argv[3], threadnum);
 
-	//thread_args targs[tasknum];
+	//thread_args targs[threadnum];
 //ROI begins
 	int startt = time(NULL);
 	for (int i = 0; i < framenum; ++i) {
-		AdvanceFrameMT(tasknum);
+		AdvanceFrameMT(threadnum);
 	}
-	/*for(int i = 0; i < tasknum; ++i) {
+	/*for(int i = 0; i < threadnum; ++i) {
 		targs[i].tid = i;
 		targs[i].frames = framenum;
 		pthread_create(&thread[i], &attr, AdvanceFramesMT, &targs[i]);
 	}
 	// *** PARALLEL PHASE *** //
-	for(int i = 0; i < tasknum; ++i) {
+	for(int i = 0; i < threadnum; ++i) {
 		pthread_join(thread[i], NULL);
 	}*/
 	std::cout << "Critical code execution time: " << time(NULL) - startt << std::endl;

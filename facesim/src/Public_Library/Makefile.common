@@ -102,7 +102,7 @@ endif
 #ENABLE_VTUNE=yes
 #endif
 
-OMPLIST = omp omp-hyb
+OMPLIST = omp omp-hyb omp4
 OMPSSLIST = ompss ompss-hyb
 OMPSSLISTI = ompss_instr
 
