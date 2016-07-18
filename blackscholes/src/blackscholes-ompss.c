@@ -329,7 +329,7 @@ int main (int argc, char **argv)
    if (argc < 4)
         {
                 printf("Usage:\n\t%s <nthreads> <inputFile> <outputFile> [blocksize]\n", argv[0]);
-                printf("Warning: nthreads is ignored! Use NX_ARGS=\"--threasd=<nthreads>\" instead\n");
+                printf("Warning: nthreads is ignored! Use NX_ARGS=\"--threads=<nthreads>\" instead\n");
        			 exit(1);
         }
         
