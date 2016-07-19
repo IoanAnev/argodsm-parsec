@@ -1,6 +1,6 @@
 VERSION=$1
 
-if [ ${VERSION} = "serial" ] || [ ${VERSION} = "pthreads" ] || [ ${VERSION} = "ompss" ] || [ ${VERSION} = "ompss_hybr" ] || [ ${VERSION} = "ompss-hyb" ] || [ ${VERSION} = "omp4" ] || [ ${VERSION} = "omp4-hyb" ]; then 
+if [ ${VERSION} = "serial" ] || [ ${VERSION} = "pthreads" ] || [ ${VERSION} = "ompss" ] || [ ${VERSION} = "ompss_instr" ] || [ ${VERSION} = "ompss_hybr" ] || [ ${VERSION} = "ompss-hyb" ] || [ ${VERSION} = "omp4" ] || [ ${VERSION} = "omp4-hyb" ]; then 
 	cd src
 	echo -e "\033[32mCleaning directory\033[m"
 	status=$( make version=${VERSION} clean 2>&1 )

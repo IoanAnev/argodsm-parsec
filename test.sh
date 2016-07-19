@@ -15,6 +15,7 @@ source env.sh
 #these are specific to Minotauro and MN
 module unload intel
 module load gcc/4.9.1
+unload ompss
 module load ompss/15.06
 
 

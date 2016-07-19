@@ -106,8 +106,6 @@ int total_queries;
 int ten_pers = MAX_QUERIES/10;
 int window = MAX_QUERIES/10;
 
-
-char *files[MAX_QUERIES];
 struct load_data *loaded_images[MAX_QUERIES];
 struct seg_data *segmented_images[MAX_QUERIES];
 struct extract_data *extracted_data[MAX_QUERIES]; 
@@ -120,6 +118,7 @@ struct extract_data *t_extract(struct seg_data*);
 struct vec_query_data *t_vec(struct extract_data*);
 struct rank_data *t_rank(struct vec_query_data*);
 void t_out (struct rank_data *, FILE *);
+
 
 char path[BUFSIZ];
 
@@ -149,41 +148,30 @@ final:
 	return result;
 }
 
-//#pragma omp task in(data) out(loaded_images[total_queries])
-struct load_data *  data_load(const char *file)
-{
-    struct load_data *data;
-    int r;
-
-    data = (struct load_data *)calloc(1, sizeof(struct load_data));
-    assert(data != NULL);
-	
-    data->name = strdup(file);
-
-		//printf("Name is %s (%s)\n", data->name, file);
-
-    r = image_read_rgb_hsv(data->name, &data->width, &data->height, &data->RGB, &data->HSV);
-    assert(r == 0);
-    //printf("Creating pipeline!!\n");
-    /*
-    r = image_read_rgb(file, &data->width, &data->height, &data->RGB);
-    r = image_read_hsv(file, &data->width, &data->height, &data->HSV);
-    */
-    return data;
-}
+int centinel[16];
+int read_resource;
 
 /* the whole path to the file */
 int file_helper (const char *file)
 {
-//	int r;
-	//struct load_data *data;
-#if 0
+	int r;
+	struct load_data *data;
+
+
+
 	data = (struct load_data *)malloc(sizeof(struct load_data));
 	assert(data != NULL);
 
 	data->name = strdup(file);
 
-	r = image_read_rgb_hsv(file, &data->width, &data->height, &data->RGB, &data->HSV);
+//JL: taskify read operation: ensure at most four cncurrent reads
+//	r = image_read_rgb_hsv(file, &data->width, &data->height, &data->RGB, &data->HSV);
+
+        read_resource = total_queries%4;
+#pragma omp task private(r) firstprivate(data, total_queries) \
+                 depend(inout: loaded_images[total_queries], centinel[read_resource]) shared (loaded_images)
+{
+	r = image_read_rgb_hsv(data->name, &data->width, &data->height, &data->RGB, &data->HSV);
 	assert(r == 0);
 
 	/*
@@ -192,13 +180,9 @@ int file_helper (const char *file)
 	*/
 
 	loaded_images[total_queries] = data;
-#endif	
-
-    	//assert(data != NULL);
-	//files[total_queries] = strdup(file);
-
- 	#pragma omp task depend(in: files[total_queries]) depend(out: loaded_images[total_queries]) firstprivate(total_queries) //label(t_load)
-  loaded_images[total_queries] = data_load(file[total_queries]);
+}
+//JL: end
+	
 	#pragma omp task depend(in: loaded_images[total_queries]) depend(out: segmented_images[total_queries]) firstprivate(total_queries) //label(t_seg)
 	segmented_images[total_queries] = t_seg(loaded_images[total_queries]);
 	#pragma omp task depend(in: segmented_images[total_queries]) depend(out: extracted_data[total_queries]) firstprivate(total_queries) //label(t_extract)
@@ -236,13 +220,13 @@ int scan_dir (const char *dir, char *head)
 
 	/* append the name to the path */
 	strcat(head, dir);
-	ret = stat(files[total_queries], &st);
+	ret = stat(path, &st);
 	if (ret != 0)
 	{
 		perror("Error:");
 		return -1;
 	}
-	if (S_ISREG(st.st_mode)) file_helper(files[total_queries]);
+	if (S_ISREG(st.st_mode)) file_helper(path);
 	else if (S_ISDIR(st.st_mode))
 	{
 		strcat(head, "/");
@@ -430,12 +414,16 @@ int main (int argc, char *argv[])
 
 	int ret, i;
 
-        printf("PARSEC Benchmark Suite\n");
-        fflush(NULL);
+        printf("PARSEC Benchmark Suite\n");  
+	 	fflush(NULL);
+
+#ifdef ENABLE_PARSEC_HOOKS
+	__parsec_bench_begin(__parsec_ferret);
+#endif
 
 	if (argc < 8)
 	{
-		printf("%s <database> <table> <query dir> <top K> <depth> <n> <out>\n", argv[0]); 
+		printf("%s <database> <table> <query dir> <top K> <depth> <n> <out>\n", argv[0]);
 		printf("Warning: Argument n is ignored!\n");
 		return 0;
 	}
@@ -485,6 +473,10 @@ int main (int argc, char *argv[])
 
 	image_init(argv[0]);
 
+#ifdef ENABLE_PARSEC_HOOKS
+	__parsec_roi_begin();
+#endif
+
 	stimer_tick(&tmr);
 	int startt = time(NULL);
 	
@@ -499,14 +491,7 @@ int main (int argc, char *argv[])
 	 */
 	
 	int max_queries = MAX_QUERIES;
-	#pragma omp parallel
-	{
-		#pragma omp single
-		{
-			t_load(query_dir);
-			#pragma omp taskwait
-		}
-	}
+	t_load(query_dir);
 /*
 	struct seg_data **segmented_images = 
 	  (struct seg_data**)malloc(sizeof(struct seg_data*)*total_queries);
@@ -535,11 +520,16 @@ int main (int argc, char *argv[])
 	}
 	#pragma omp taskwait
 */
+	#pragma omp taskwait
 // 	for(i=0; i < total_queries; i++) {
 // 	  t_out(ranked_results[i]);
 // 	}
 	
 	stimer_tuck(&tmr, "QUERY TIME");
+
+#ifdef ENABLE_PARSEC_HOOKS
+	__parsec_roi_end();
+#endif
 	
 	ret = cass_env_close(env, 0);
 	if (ret != 0) { printf("ERROR: %s\n", cass_strerror(ret)); return 0; }
@@ -550,6 +540,11 @@ int main (int argc, char *argv[])
 
 	fclose(fout);
 
+#ifdef ENABLE_PARSEC_HOOKS
+	__parsec_bench_end();
+#endif
+
 	return 0;
 }
+
 
