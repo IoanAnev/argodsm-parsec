@@ -1428,6 +1428,8 @@ void Fragment(struct thread_args *args){
 				  bytes_left = 0;
 				}
 
+				//printf("bytes left:%d - bytes read:%d\n", bytes_left, bytes_read);
+
 				//Make sure that system supports new buffer size
 				if(MAXBUF+bytes_left > SSIZE_MAX) {
 				  EXIT_TRACE("Input buffer size exceeds system maximum.\n");

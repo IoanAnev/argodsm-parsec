@@ -71,7 +71,7 @@ Update_Forces_And_Derivatives_Helper(int p)
                 ARRAY<int>* check_collision_pointer = &check_collision; ARRAY<VECTOR_3D<T> >* collision_force_pointer = &collision_force;
                 ARRAY<SYMMETRIC_MATRIX_3X3<T> > * collision_force_derivative_pointer = &collision_force_derivative;
                 #pragma omp task depend(in:check_collision_pointer[0:1],collision_force_pointer[0:1],collision_force_derivative_pointer[0:1])\
-                                depend(inout:check_collision_bp[START:START-END+1],collision_force_bp[START:START-END+1],collision_force_derivative_bp[START:START-END+1]) \
+                                depend(inout:check_collision_bp[START:END-START+1],collision_force_bp[START:END-START+1],collision_force_derivative_bp[START:END-START+1]) \
                                 firstprivate(START,END) 
                 {
                     for (int p = START; p <= END; p++)

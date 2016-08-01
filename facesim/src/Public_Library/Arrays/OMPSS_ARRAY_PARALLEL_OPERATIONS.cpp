@@ -36,7 +36,7 @@ Clear_Parallel (ARRAY<T>& array_output, const ARRAY<VECTOR_2D<int> >& ranges)
     #ifdef USE_TASKS
         ARRAY<T>* array_output_pointer = &array_output; T* bp_output = array_output.base_pointer; long SIZE = array_output.m;
         ARRAY<VECTOR_2D<int> >* ranges_pointer = &ranges;
-        #pragma omp task depend(inout:array_output_pointer[0:1],bp_output[:SIZE]) firstprivate(ranges_pointer)
+        #pragma omp task depend(inout:array_output_pointer,bp_output[:SIZE]) firstprivate(ranges_pointer)
         {
             #ifdef ENABLE_OMPEXTRAE
             Extrae_user_function(1);
