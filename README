@@ -78,6 +78,8 @@ command line).
 After the configure script is run, proceed as noted previously, with the "make" command inside the "src" directory 
 of the benchmark.
 
+Warning! If you are compiling canneal for ARMv8 architecture, you need to edit canneal/src/Makefile and change -march=native to -march=armv8-a
+
 ==== Dependencies =====
 
 PARSEC-BSC comes bundled with two libraries: GNU Science Library (GSL) and ImageMagick 6.3.6. Currently you need both of them to compile 
