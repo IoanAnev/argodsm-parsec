@@ -63,7 +63,7 @@ void * worker(void *arg)
 
    return NULL;    
 }
-#elif defined(ENABLE_OMP)
+#elif defined(ENABLE_OMP4)
 {
 	#pragma omp parallel 
 	{
@@ -72,6 +72,7 @@ void * worker(void *arg)
 			int iSuccess;
 			FTYPE pdSwaptionPrice[2];
 			for(int i=0; i < nSwaptions; i++) {
+				 #pragma omp task firstprivate(i) private(iSuccess, pdSwaptionPrice) //depend(inout: swaptions[i])
 				 #pragma omp task firstprivate(i) private(iSuccess, pdSwaptionPrice) depend(inout: swaptions[i])
 				 {
 				 iSuccess = HJM_Swaption_Blocking(pdSwaptionPrice,  swaptions[i].dStrike, 
@@ -87,6 +88,28 @@ void * worker(void *arg)
 			}
 		 	#pragma omp taskwait
 		} //end of single  
+	} //end of parallel region
+   return NULL;    
+}
+#elif defined(ENABLE_OMP2)
+{
+	#pragma omp parallel 
+	{
+			int iSuccess;
+			FTYPE pdSwaptionPrice[2];
+			#pragma omp for schedule(SCHED_POLICY)
+			for(int i=0; i < nSwaptions; i++) {
+				 iSuccess = HJM_Swaption_Blocking(pdSwaptionPrice,  swaptions[i].dStrike, 
+				                                   swaptions[i].dCompounding, swaptions[i].dMaturity, 
+				                                   swaptions[i].dTenor, swaptions[i].dPaymentInterval,
+				                                   swaptions[i].iN, swaptions[i].iFactors, swaptions[i].dYears, 
+				                                   swaptions[i].pdYield, swaptions[i].ppdFactors,
+				                                   100, NUM_TRIALS, BLOCK_SIZE, 0);
+				 assert(iSuccess == 1);
+				 swaptions[i].dSimSwaptionMeanPrice = pdSwaptionPrice[0];
+				 swaptions[i].dSimSwaptionStdError = pdSwaptionPrice[1];
+			}
+		 	#pragma omp taskwait
 	} //end of parallel region
    return NULL;    
 }
@@ -164,7 +187,7 @@ int main(int argc, char *argv[])
           exit(1);
         }
 
-#if defined(ENABLE_OMPSS) || defined(ENABLE_OMP)
+#if defined(ENABLE_OMPSS) || defined(ENABLE_OMP2) || defined(ENABLE_OMP4)
 	printf("Warning! Argumetn -nt is ignored, use NX_ARGS for OMPSs or OMP_NUM_THREADS for OpenMP 4.0\n");
 #endif
 
@@ -200,7 +223,7 @@ int main(int argc, char *argv[])
 	}
 	threads = (pthread_t *) malloc(nThreads * sizeof(pthread_t));
 	pthread_attr_init(&pthread_custom_attr);
-#elif defined ENABLE_OMPSS || defined ENABLE_OMP
+#elif defined ENABLE_OMPSS || defined ENABLE_OMP2 || defined ENABLE_OMP4
 	//ignore number of threads
 	nThreads = nSwaptions;
 #else

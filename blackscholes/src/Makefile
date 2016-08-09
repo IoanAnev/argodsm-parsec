@@ -17,10 +17,10 @@ ifdef version
     CFLAGS	+= -pthread
     TARGET  = blackscholes-pthreads
   endif
-  ifeq "$(version)" "omp3"
+  ifeq "$(version)" "omp2"
     MT        = -DENABLE_OPENMP
-    CFLAGS    += -fopenmp
-    TARGET    = blackscholes-omp3
+    CFLAGS    += -fopenmp -DSCHED_POLICY=static
+    TARGET    = blackscholes-omp2
   endif
   ifeq "$(version)" "ompss"
     CC      = mcc

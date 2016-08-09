@@ -286,7 +286,7 @@ int bs_thread(void *tid_ptr) {
 
     for (j=0; j<NUM_RUNS; j++) {
 #ifdef ENABLE_OPENMP
-#pragma omp parallel for private(i, price, priceDelta)
+#pragma omp parallel for private(i, price, priceDelta) schedule(SCHED_POLICY)
         for (i=0; i<numOptions; i++) {
 #else  //ENABLE_OPENMP
         for (i=start; i<end; i++) {

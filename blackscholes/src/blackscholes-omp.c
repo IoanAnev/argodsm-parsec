@@ -290,8 +290,9 @@ void bs_thread(void *tid_ptr,fptype *prices) {
 				        /* Calling main function to calculate option value based on 
 				         * Black & Sholes's equation.
 				         */
-				   			#pragma omp task depend(in: sptprice[i],strike[i],rate[i],volatility[i],otime[i],otype[i]) depend(out: prices[i])
-					 			BlkSchlsEqEuroNoDiv( &sptprice[i], &strike[i],
+				   			//#pragma omp task depend(in: sptprice[i],strike[i],rate[i],volatility[i],otime[i],otype[i]) depend(out: prices[i])
+					 		#pragma omp task	
+							BlkSchlsEqEuroNoDiv( &sptprice[i], &strike[i],
 				                             &rate[i], &volatility[i], &otime[i],
 				                             &otype[i], 0, &prices[i], BSIZE);
 				    }

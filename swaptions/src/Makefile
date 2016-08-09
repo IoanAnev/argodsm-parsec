@@ -29,9 +29,17 @@ ifdef version
     EXEC=swaptions-ompss_instr
   endif
 
+  ifeq "$(version)" "omp2"
+    MCXX=g++
+    DEF := $(DEF) -DENABLE_OMP2
+    CXXFLAGS := $(CXXFLAGS) -fopenmp -DSCHED_POLICY=static
+    EXEC=swaptions-omp2
+  endif
+
+
   ifeq "$(version)" "omp4"
     MCXX=g++
-    DEF := $(DEF) -DENABLE_OMP
+    DEF := $(DEF) -DENABLE_OMP4
     CXXFLAGS := $(CXXFLAGS) -fopenmp 
     EXEC=swaptions-omp4
   endif

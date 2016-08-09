@@ -52,23 +52,23 @@ source env.sh
 Available versions:
 	- serial: Original sequential version of the code.
 	- pthread: Original parallel implementation with Pthreads.
-	- omp3: Oritinal parallel impelemntation with OpenMP 3.0.
+	- omp2: OpenMP implementation using only features in OpenMP 2.0 (e.g. loops).
 	- ompss:  Our parallel implementation with OmpSs tasks.
 	- ompss_instr: Same as ompss but with instrumetation enabled, creating a different executable.
-	- omp4: Our parallel implementation using OpenMP 4.0 tasks.
+	- omp4: Our parallel implementation using OpenMP 3.0/4.0 tasks.
 	- tbb: Not Supported!
 
 Alternatively, you may want to build the benchmarks manually.  For most benchmarks,
 blackscholes, canneal, dedup, facesim, ferret, fluianimate, freqmine, swaptions
 compilation and installation is done with the following commands:
 
-make version=<serial | pthreads | openmp | omp | ompss | ompss_instr>                  #choose one version - e.g. make version=ompss
+make version=<serial | pthreads | openmp | omp2 | ompss | ompss_instr>                  #choose one version - e.g. make version=ompss
 
-make version=<serial | pthreads | openmp | omp | ompss | ompss_instr> install 	        #this will install the executables in the bin dir
+make version=<serial | pthreads | openmp | omp2 | ompss | ompss_instr> install 	        #this will install the executables in the bin dir
 
 To clean, run 
 
-make version=<serial | pthreads | openmp | omp | ompss | ompss_instr> clean            #Clean files of the selected version
+make version=<serial | pthreads | openmp | omp2 | ompss | ompss_instr> clean            #Clean files of the selected version
 
 In case the benchmark uses autotools, first do an autoreconf -fiv and then run the configure 
 script. Take a look at the build script of each benchmark (in ${ROOT}/benchmark-name/bench) or just list the help

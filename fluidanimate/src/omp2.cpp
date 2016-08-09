@@ -1194,23 +1194,21 @@ void AdvanceFrameMT(int ntasks)
 {
 	#pragma omp parallel
 	{
-		#pragma omp single
-		{
 				//std::cerr << "Xivato 0" << std::endl;
 			int blocini = 0;
+			#pragma omp for schedule(SCHED_POLICY)
 			for (int i = 0; i < ntasks; ++i) {
 				int size = GRIDSIZE(i);
-				#pragma omp task depend(out: cnumPars[blocini:size]) //label(ClearParticles)
 				ClearParticlesMT(i);
 				blocini += size;
 			}
-			//#pragma omp taskwait on([numCells]cnumPars)
+			#pragma omp taskwait //on([numCells]cnumPars)
 				//SaveFileAll("bolcat1.fluid");
 				//std::cerr << "Xivato 1" << std::endl;
 			blocini = 0;
+			#pragma omp for schedule(SCHED_POLICY) 
 			for (int i = 0; i < ntasks; ++i) {
 				int size = GRIDSIZE(i);
-				#pragma omp task depend(in: cells2[blocini:size], cnumPars2[blocini:size]) depend(inout: cnumPars[blocini:size]) depend(out: cells[blocini:size]) //label(RebuildGrid)
 				RebuildGridMT(i);
 				blocini += size;
 			}
@@ -1221,23 +1219,23 @@ void AdvanceFrameMT(int ntasks)
 				//SaveFileAll("bolcat2.fluid");
 				//std::cerr << "Xivato 2" << std::endl;
 			blocini = 0;
+			#pragma omp for schedule(SCHED_POLICY) 
 			for (int i = 0; i < ntasks; ++i) {
 				int size = GRIDSIZE(i);
-				#pragma omp task depend(in: cnumPars[blocini:size]) depend(inout: cells[blocini:size]) //label(InitDensitiesAndForces)
 				InitDensitiesAndForcesMT(i);
 				blocini += size;
 			}
-			//#pragma omp taskwait on([numCells]cells)
+			#pragma omp taskwait //on([numCells]cells)
 				//SaveFileAll("bolcat3.fluid");
 				//std::cerr << "Xivato 3" << std::endl;
 			blocini = 0;
+			#pragma omp for schedule(SCHED_POLICY) 
 			for (int i = 0; i < ntasks; ++i) {
 				int size = GRIDSIZE(i);
-				#pragma omp task depend(in: cnumPars[blocini:size]) depend(inout: cells[blocini:size]) //label(ComputeDensities)
 				ComputeDensitiesMT(i);
 				blocini += size;
 			}
-			//#pragma omp taskwait
+			#pragma omp taskwait
 			//#pragma omp task in([ntasks]private_cells, [numCells]cnumPars) inout([numCells]cells)
 			//ComputeDensitiesJoin(ntasks);
 				//#pragma omp taskwait
@@ -1245,23 +1243,23 @@ void AdvanceFrameMT(int ntasks)
 				//SaveFileAll("bolcat4.fluid");
 				//std::cerr << "Xivato 4" << std::endl;
 			blocini = 0;
+			#pragma omp for schedule(SCHED_POLICY) 
 			for (int i = 0; i < ntasks; ++i) {
 				int size = GRIDSIZE(i);
-				#pragma omp task depend(inout: cells[blocini:size]) //label(ComputeDensities2)
 				ComputeDensities2MT(i);
 				blocini += size;
 			}
-			//#pragma omp taskwait on([numCells]cells)
+			#pragma omp taskwait //on([numCells]cells)
 				//SaveFileAll("bolcat5.fluid");
 				//std::cerr << "Xivato 5" << std::endl;
 			blocini = 0;
+			#pragma omp for schedule(SCHED_POLICY) 
 			for (int i = 0; i < ntasks; ++i) {
 				int size = GRIDSIZE(i);
-				#pragma omp task depend(in: cnumPars[blocini:size]) depend(inout: cells[blocini:size]) //label(ComputeForces)
 				ComputeForcesMT(i);
 				blocini += size;
 			}
-			//#pragma omp taskwait
+			#pragma omp taskwait
 			//#pragma omp task in([ntasks]private_cells, [numCells]cnumPars) inout([numCells]cells)
 			//ComputeForcesJoin(ntasks);
 				//#pragma omp taskwait
@@ -1269,26 +1267,25 @@ void AdvanceFrameMT(int ntasks)
 				//SaveFileAll("bolcat6.fluid");
 				//std::cerr << "Xivato 6" << std::endl;
 			blocini = 0;
+			#pragma omp for schedule(SCHED_POLICY) 
 			for (int i = 0; i < ntasks; ++i) {
 				int size = GRIDSIZE(i);
-				#pragma omp task depend(in: cnumPars[blocini:size]) depend(inout: cells[blocini:size]) //label(ProcessCollisions)
 				ProcessCollisionsMT(i);
 				blocini += size;
 			}
-			//#pragma omp taskwait on([numCells]cells)
+			#pragma omp taskwait //on([numCells]cells)
 				//SaveFileAll("bolcat7.fluid");
 				//std::cerr << "Xivato 7" << std::endl;
 			blocini = 0;
+			#pragma omp for schedule(SCHED_POLICY) 
 			for (int i = 0; i < ntasks; ++i) {
 				int size = GRIDSIZE(i);
-				#pragma omp task depend(inout: cells[blocini:size]) //label(AdvanceParticles)
 				AdvanceParticlesMT(i);
 				blocini += size;
 			}
-	//#pragma omp taskwait
+			#pragma omp taskwait
 		//SaveFileAll("bolcat8.fluid");
 		//std::cerr << "Xivato 8" << std::endl;
-		} //end of single
 	}	//end of parallel region
 }
 

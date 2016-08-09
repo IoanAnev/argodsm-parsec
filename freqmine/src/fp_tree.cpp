@@ -210,7 +210,7 @@ template <class T> void first_transform_FPTree_into_FPArray(FP_tree *fptree, T m
 	new_data_num[0][0] = sum_new_data_num;
 	T *ItemArray = (T *)local_buf->newbuf(1, new_data_num[0][0] * sizeof(T));
 #if !defined(_OMPSS) && !defined(_OMP)
-	#pragma omp parallel for
+	#pragma omp parallel for schedule(SCHED_POLICY)
 #endif
 	for (j = 0; j < workingthread; j ++) {
 #if defined(_OMPSS)
@@ -545,7 +545,7 @@ void FP_tree::database_tiling(int workingthread)
 			origin[i][j] = 1;
 	}
 #if !defined(_OMPSS) && !defined(_OMP)
-	#pragma omp parallel for schedule(dynamic,1)
+	#pragma omp parallel for schedule(SCHED_POLICY) //schedule(dynamic,1)
 #endif
 	for (i = 0; i < mapfile->tablesize; i ++) {
 #if defined(_OMPSS)
@@ -739,7 +739,8 @@ void FP_tree::database_tiling(int workingthread)
 			}
 		}
 #if !defined(_OMPSS) && !defined(_OMP)
-	#pragma omp parallel for
+	#pragma omp parallel for schedule(SCHED_POLICY)
+
 #endif
 	for (i = 0; i < workingthread; i ++) {
 #if defined(_OMPSS)
@@ -901,7 +902,8 @@ void FP_tree::scan1_DB(Data* fdat)
 	}
 	hot_node_depth[0] = 0;
 #if !defined(_OMPSS) && !defined(_OMP)
-	#pragma omp parallel for
+	#pragma omp parallel for schedule(SCHED_POLICY)
+
 #endif
 	for (int k = 0; k < workingthread; k ++) {
 #if defined(_OMPSS)
@@ -1099,7 +1101,7 @@ void FP_tree::scan2_DB(int workingthread)
 	database_tiling(workingthread);
 	Fnode **local_hashtable = hashtable[0];
 #if !defined(_OMPSS) && !defined(_OMP)
-	#pragma omp parallel for schedule(dynamic,1)
+	#pragma omp parallel for schedule(SCHED_POLICY) //schedule(dynamic,1)
 #endif
 	for (j = 0; j < mergedworknum; j ++) {
 #if defined(_OMPSS)
@@ -1224,7 +1226,8 @@ void FP_tree::scan2_DB(int workingthread)
 	}
 	int totalnodes = cal_level_25(0);
 #if !defined(_OMPSS) && !defined(_OMP)	
-	#pragma omp parallel for
+	#pragma omp parallel for schedule(SCHED_POLICY)
+
 #endif
 	for (j = 0; j < workingthread; j ++) {
 #if defined(_OMPSS)
@@ -1413,7 +1416,7 @@ int FP_tree::FP_growth_first(FSout* fout)
 			}
 		}
 #if !defined(_OMPSS) && !defined(_OMP)
-		#pragma omp parallel for schedule(dynamic,1)
+		#pragma omp parallel for schedule(SCHED_POLICY) //schedule(dynamic,1)
 #endif
 		for(sequence=upperbound - 1; sequence>=lowerbound; sequence--)
 		{

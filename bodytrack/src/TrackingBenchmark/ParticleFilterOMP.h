@@ -64,7 +64,7 @@ void ParticleFilterOMP<T>::CalcWeights(std::vector<Vectorf > &particles)
 	mWeights.resize(particles.size());
 
 	int np = (int)particles.size(), j;
-	#pragma omp parallel for																//OpenMP parallelized loop to compute log-likelihoods
+	#pragma omp parallel for schedule(SCHED_POLICY)																//OpenMP parallelized loop to compute log-likelihoods
 	for(j = 0; j < np; j++) 
 	{	bool vflag;
 		int n = omp_get_thread_num();
@@ -108,7 +108,7 @@ void ParticleFilterOMP<T>::GenerateNewParticles(int k)
 	for(int i = 0; i < (int)mBins.size(); i++)										
 		for(uint j = 0; j < mBins[i]; j++)													//index particles to be regenerated
 			mIndex[p++] = i;
-	#pragma omp parallel for
+	#pragma omp parallel for schedule(SCHED_POLICY)
 	for(int i = 0; i < mNParticles; i++)													//distribute new particles randomly according to model stdDevs
 	{	mNewParticles[i] = mParticles[mIndex[i]];											//add new particle for each entry in each bin distributed randomly about duplicated particle
 		this->AddGaussianNoise(mNewParticles[i], mModel->StdDevs()[k], mRnd[i]);

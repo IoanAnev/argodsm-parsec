@@ -40,7 +40,7 @@ bool FlexFilterRowVOMP(FlexImage<T,1> &src, FlexImage<T,1> &dst, T2 *kernel, int
 		dst.Reallocate(src.Size());
 	dst.Set((T)0);
 	int n = kernelSize / 2, h = src.Height();
-	#pragma omp parallel for
+	#pragma omp parallel for schedule(SCHED_POLICY)
 	for(int y = 0; y < h; y++)
 	{	T *psrc = &src(n, y), *pdst = &dst(n, y);
 		for(int x = n; x < src.Width() - n; x++)
@@ -67,7 +67,7 @@ bool FlexFilterColumnVOMP(FlexImage<T,1> &src, FlexImage<T,1> &dst, T2 *kernel, 
 	dst.Set((T)0);
 	int n = kernelSize / 2;
 	int sb = src.StepBytes(), h = src.Height() - n;
-	#pragma omp parallel for
+	#pragma omp parallel for schedule(SCHED_POLICY)
 	for(int y = n; y < h; y++)
 	{	T *psrc = &src(0, y), *pdst = &dst(0, y);
 		for(int x = 0; x < src.Width(); x++)
@@ -100,7 +100,7 @@ inline FlexImage8u GradientMagThresholdOMP(FlexImage8u &src, float threshold)
 {
 	FlexImage8u r(src.Size());
 	ZeroBorder(r);
-	#pragma omp parallel for
+	#pragma omp parallel for schedule(SCHED_POLICY)
 	for(int y = 1; y < src.Height() - 1; y++)																					//for each pixel
 	{	Im8u *p = &src(1,y), *ph = &src(1,y - 1), *pl = &src(1,y + 1), *pr = &r(1,y);
 		for(int x = 1; x < src.Width() - 1; x++)

@@ -16,7 +16,7 @@ case $INPUT in
   "test") ARGS="=-ns 1 -sm 5"
 esac
 
-if [ $VERSION = "omp4" ] || [ $VERSION = "omp3" ]; then
+if [ $VERSION = "omp4" ] || [ $VERSION = "omp2" ]; then
 
 	export OMP_NUM_THREADS=${NTHREADS}
 

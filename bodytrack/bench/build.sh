@@ -163,7 +163,7 @@ elif [ ${VERSION} = "ompss_instr" ]; then
 	fi 
 	cd ..
 	echo -e "\033[32mDone!\033[m"
-elif [ ${VERSION} = "omp3" ]; then 
+elif [ ${VERSION} = "omp2" ]; then 
 	cd src
 	status=$(autoreconf -fiv)
 	echo -e "\033[32mConfiguring environment\033[m"

@@ -3,10 +3,10 @@ TARGET = freqmine-serial
 CXXFLAGS += -Wno-deprecated
 
 ifdef version
-  ifeq "$(version)" "omp3"
+  ifeq "$(version)" "omp2"
     CXX=g++
-    CXXFLAGS += -fopenmp 
-    TARGET=freqmine-omp3
+    CXXFLAGS += -fopenmp -DSCHED_POLICY=static 
+    TARGET=freqmine-omp2
     LDFLAGS += 
   endif
 endif

@@ -3,17 +3,17 @@ CXX=g++
 #ERR_CHK=-DERR_CHK
 CXXFLAGS += -fopenmp -g -Wno-deprecated -Wall -O3
 
-TARGET   = fluidanimate-omp
-OBJS     = omp.o
+TARGET   = fluidanimate-omp2
+OBJS     = omp2.o
 
 # To enable visualization comment out the following lines (don't do this for benchmarking)
 #OBJS     += fluidview.o
 #CXXFLAGS += -DENABLE_VISUALIZATION
 #LIBS     += -lglut
 
-all: ompss fluidcmp
+all: omp2 fluidcmp
 
-ompss: $(OBJS)
+omp2: $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(LIBS) -o $(TARGET)
 
 %.o : %.cpp

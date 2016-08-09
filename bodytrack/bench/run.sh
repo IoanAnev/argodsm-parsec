@@ -16,7 +16,7 @@ case $INPUT in
   "test") ARGS="${BENCHPATH}/inputs/sequenceB_1 4 1 100 3 0";;
 esac
 
-if [ $VERSION = "omp4" ] || [ $VERSION = "omp3" ]; then
+if [ $VERSION = "omp4" ] || [ $VERSION = "omp2" ]; then
 
 	export OMP_NUM_THREADS=${NTHREADS}
 
