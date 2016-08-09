@@ -40,6 +40,8 @@ typedef unsigned long u_long;
 #  include "alpha/atomic.h"
 #elif defined(__arm__) || defined(__arm) || defined(arm) || defined(__ARM__) || defined(__ARM_EABI__)
 #  include "arm/atomic.h"
+#elif defined(__arm64__) || defined(__arm64) || defined(arm64) || defined(__ARM64__) || defined(aarch64) || defined(_aarch64_) || defined(__aarch64__)
+#  include "arm64/atomic.h"
 #else
 #  error Architecture not supported by atomic.h
 #endif
