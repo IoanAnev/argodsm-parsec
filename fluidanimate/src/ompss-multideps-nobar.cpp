@@ -972,7 +972,7 @@ void ProcessCollisionsMT(int tid)
 }
 #endif
 
-#define USE_ImpeneratableWall
+//#define USE_ImpeneratableWall
 #if defined(USE_ImpeneratableWall)
 void ProcessCollisions2MT(int tid)
 {
