@@ -1,6 +1,6 @@
 BENCHMARKS='blackscholes bodytrack canneal dedup facesim ferret fluidanimate freqmine streamcluster swaptions x264'
 #BENCHMARKS=$1
-VERSIONS='serial pthreads omp3 ompss ompss_instr omp4'
+VERSIONS='serial pthreads omp2 ompss omp4'
 
 ACTIONS='compile run'
 #ACTIONS=$2
@@ -13,10 +13,13 @@ FAIL_EXECUTE=0
 
 source env.sh
 #these are specific to Minotauro and MN
-module unload intel
-module load gcc/4.9.1
-unload ompss
-module load ompss/15.06
+
+if [  "${BSC_MACHINE}" == "nvidia" ]; then
+	module unload intel
+	module load gcc/4.9.1
+	unload ompss
+	module load ompss/15.06
+fi
 
 
 for action in $ACTIONS; do
