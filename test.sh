@@ -1,6 +1,6 @@
 BENCHMARKS='blackscholes bodytrack canneal dedup facesim ferret fluidanimate freqmine streamcluster swaptions x264'
 #BENCHMARKS=$1
-VERSIONS='serial pthreads omp3 ompss ompss_instr omp4'
+VERSIONS='serial pthreads omp2 omp4 ompss ompss_instr'
 
 ACTIONS='compile run'
 #ACTIONS=$2
@@ -12,12 +12,16 @@ FAIL_COMPILE=0
 FAIL_EXECUTE=0
 
 source env.sh
-#these are specific to Minotauro and MN
-module unload intel
-module load gcc/4.9.1
-unload ompss
-module load ompss/15.06
 
+if [  "${BSC_MACHINE}" == "nvidia" ]; then
+	#these are specific to Minotauro and MN
+	module unload intel
+	module load gcc/4.9.1
+	unload ompss
+	module load ompss/15.06
+fi
+
+#TODO: build library dependencies
 
 for action in $ACTIONS; do
 
@@ -63,16 +67,22 @@ case $action in
 			fi
 			
 			for version in ${VERSIONS}; do
-				echo "============================= ${bench}-${version} =============================" >> exec_log.err 
-				
-				if ! (${ROOT}/${bench}/bench/run.sh ${version} ${input} ${ncores} 1>> exec_log.err 2>> exec_log.err); then
-					printf '\t* %10s\t\033[31mFAILED!\033[m\n' "${version}"
-                  let FAIL_EXECUTE=FAIL_EXECUTE+1
-				else
-					printf '\t* %10s\t\033[32mPASSED!\033[m\n' "${version}"
-				fi
-				
-				echo "==================================== Done =====================================" >> exec_log.err
+		
+   				echo "============================= ${bench}-${version} =============================" >> exec_log.err 
+                
+                if ! (${ROOT}/${bench}/bench/run.sh ${version} ${input} ${ncores} 1>> exec_log.err 2>> exec_log.err); then
+                    cat exec_log.err | grep "${bench}-${version}: No such file or directory" >> /dev/null
+                    if [ $? -eq 0 ]; then
+                        printf '\t* %10s\t\033[33mNOT SUPPORTED!\033[m\n' "${version}"
+                    else
+                        printf '\t* %10s\t\033[31mFAILED!\033[m\n' "${version}"
+                    let FAIL_EXECUTE=FAIL_EXECUTE+1
+                    fi
+                else
+                    printf '\t* %10s\t\033[32mPASSED!\033[m\n' "${version}"
+                fi
+                
+                echo "==================================== Done =====================================" >> exec_log.err
 			done
 		done
 		echo -e "\nCheck exec_log.err for errors."
@@ -85,6 +95,7 @@ esac
 
 done
 
+echo
 echo Total compile bencmark fail\(s\): $FAIL_COMPILE
 echo Total execute bencmark fail\(s\): $FAIL_EXECUTE
 
