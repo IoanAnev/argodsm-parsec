@@ -1304,7 +1304,7 @@ void AdvanceFrameMT(int ntasks)
 int main(int argc, char *argv[])
 {
 
-  if(argc < 5 || argc >= 7)
+  if(argc < 5 || argc >= 6)
   {
 	std::cout << "Usage: " << argv[0] << " <tasknum> <framenum> <.fluid input file> <.fluid output file> [ndivs]" << std::endl;
 	std::cout << "Warning: Argument tasknum is ignored! Use OMP_NUM_THREADS for setting thread number and ndivs argument to influence the number of tasks (usually ndivs works well if it's equal to the number of cores)." << std::endl; 
@@ -1312,8 +1312,8 @@ int main(int argc, char *argv[])
   }
 
   int threadnum = NDIVS;
-  if(argc > 6) {
-	threadnum = atoi(argv[6]);	
+  if(argc > 5) {
+	threadnum = atoi(argv[5]);	
   }
 
 
