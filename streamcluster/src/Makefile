@@ -19,6 +19,13 @@ ifdef version
     OBJS = ompss_streamcluster.o
 	TARGET = streamcluster-ompss_instr
   endif
+  ifeq "$(version)" "omp2"
+    CXX := g++
+    CXXFLAGS := $(CXXFLAGS) -DSCHED_POLICY=static -fopenmp
+    OBJS = omp2_streamcluster.o
+	TARGET = streamcluster-omp2
+  endif
+
 endif
 
 all: $(MAKEOBJECTIVES) $(OBJS)

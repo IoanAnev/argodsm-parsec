@@ -18,7 +18,7 @@ esac
 
 mkdir -p ${BENCHPATH}/outputs
 
-if [ $VERSION = "omp4" ] || [ $VERSION = "omp3" ]; then
+if [ $VERSION = "omp4" ] || [ $VERSION = "omp2" ]; then
 
 	export OMP_NUM_THREADS=${NTHREADS}
 

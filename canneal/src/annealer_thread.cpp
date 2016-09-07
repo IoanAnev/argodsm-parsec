@@ -99,7 +99,7 @@ void annealer_thread::Run()
 		#pragma omp taskwait
 	}
 }
-#elif defined ENABLE_OMP
+#elif defined ENABLE_OMP4
 {
 	#pragma omp parallel
 	{
@@ -117,7 +117,8 @@ void annealer_thread::Run()
 				int acc_good[_ntasks];
 				int acc_bad[_ntasks];
 				for (int j = 0; j < _ntasks; ++j) {
-					#pragma omp task firstprivate(j) depend(out: acc_good[j], acc_bad[j]) default(shared)
+					//#pragma omp task firstprivate(j) depend(out: acc_good[j], acc_bad[j]) default(shared)
+					#pragma omp task firstprivate(j) default(shared)
 					{
 					long a_id;
 					long b_id;
@@ -153,6 +154,57 @@ void annealer_thread::Run()
 				#pragma omp taskwait
 			}
 		} // end of single
+	} //end of parallel region
+}
+#elif defined ENABLE_OMP2
+{
+	#pragma omp parallel
+	{
+			int accepted_good_moves=0;
+			int accepted_bad_moves=-1;
+			double T = _start_temp;
+			Rng *rng; //store of randomness
+			rng = new Rng[_ntasks];
+
+			int temp_steps_completed=0; 
+			while(keep_going(temp_steps_completed, accepted_good_moves, accepted_bad_moves)){
+				T = T / 1.5;
+				int acc_good[_ntasks];
+				int acc_bad[_ntasks];
+				#pragma omp for schedule(SCHED_POLICY)
+				for (int j = 0; j < _ntasks; ++j) {
+					long a_id;
+					long b_id;
+					netlist_elem* a = _netlist->get_random_element(&a_id, NO_MATCHING_ELEMENT, &rng[j]);
+					netlist_elem* b = _netlist->get_random_element(&b_id, NO_MATCHING_ELEMENT, &rng[j]);
+					acc_good[j] = 0;
+					acc_bad[j] = 0;
+					int iters = _swaps_per_temp/_ntasks;
+					if (_swaps_per_temp%_ntasks > j) ++iters;
+					for (int i = 0; i < iters; i++){
+						//get a new element. Only get one new element, so that reuse should help the cache
+						a = b;
+						a_id = b_id;
+						b = _netlist->get_random_element(&b_id, a_id, &rng[j]);
+				
+						routing_cost_t delta_cost = calculate_delta_routing_cost(a,b);
+						move_decision_t is_good_move = accept_move(delta_cost, T, &rng[j]);
+
+						//make the move, and update stats:
+						if (is_good_move == move_decision_accepted_bad){
+							acc_bad[j]++;
+							_netlist->swap_locations(a,b);
+						} else if (is_good_move == move_decision_accepted_good){
+							acc_good[j]++;
+							_netlist->swap_locations(a,b);
+						} else if (is_good_move == move_decision_rejected){
+							//no need to do anything for a rejected move
+						}
+					}
+				}
+				temp_steps_completed++;
+				#pragma omp taskwait
+			}
 	} //end of parallel region
 }
 #else

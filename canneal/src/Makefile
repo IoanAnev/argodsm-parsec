@@ -22,10 +22,16 @@ ifdef version
     CXXFLAGS += -march=native -DENABLE_OMPSS --ompss --no-copy-deps --instrument
     TARGET=canneal-ompss_instr
   endif
-  
+ 
+  ifeq "$(version)" "omp2"
+    MCXX=g++
+    CXXFLAGS += -DENABLE_OMP2 -fopenmp -DSCHED_POLICY=static -march=native
+    TARGET=canneal-omp2
+  endif
+ 
   ifeq "$(version)" "omp4"
     MCXX=g++
-    CXXFLAGS += -DENABLE_OMP -fopenmp -march=native
+    CXXFLAGS += -DENABLE_OMP4 -fopenmp -march=native
     TARGET=canneal-omp4
   endif
 endif

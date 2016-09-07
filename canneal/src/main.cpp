@@ -103,7 +103,7 @@ int main (int argc, char * const argv[]) {
 #endif
 	srandom(3);
 
-#if defined(ENABLE_OMPSS) || defined(ENABLE_OMP)
+#if defined(ENABLE_OMPSS) || defined(ENABLE_OMP2) || defined(ENABLE_OMP4)
 	if(argc != 6 && argc != 7) {
 		cout << "Usage: " << argv[0] << " NTHREADS NSWAPS TEMP NETLIST NSTEPS [NTASKS]\nWarning: NTHREADS is ingored! Use NX_ARGS for OMPSs or OMP_NUM_THREADS for OpenMP 4.0\n" << endl;
 		exit(1);
@@ -125,7 +125,7 @@ int main (int argc, char * const argv[]) {
 #endif
 	//argument 1 is numthreads
 	cout << "Taskcount: " << num_threads << endl;
-#if defined(ENABLE_THREADS) || defined(ENABLE_OMPSS) || defined (ENABLE_OMP)
+#if defined(ENABLE_THREADS) || defined(ENABLE_OMPSS) || defined (ENABLE_OMP2) || defined(ENABLE_OMP4)
 	if (num_threads < 1){
 		cout << "NTHREADS/NTASKS must be at least 1" <<endl;
 		exit(1);
