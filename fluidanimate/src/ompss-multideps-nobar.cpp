@@ -1212,7 +1212,7 @@ void AdvanceFrameMT(int threadnum, std::vector< vector<int> > neighborhood, std:
   //#pragma omp taskwait
   #pragma omp task in( e ) label(endofiteration) out(dependency_past[ii+1])
   {
-      fprintf(stdout, "End of Iteration\n");
+      #fprintf(stdout, "End of Iteration\n");
       fflush(stdout);
       for(int j = 0; j<threadnum; ++j) {
          compute_particles(j, &particles[j] );
@@ -1285,7 +1285,7 @@ int main(int argc, char *argv[])
   __parsec_bench_begin(__parsec_fluidanimate);
 #endif
 
-  if(argc < 5 || argc >= 6)
+  if(argc < 5 || argc >= 7)
   {
     std::cout << "Usage: " << argv[0] << " <threadnum> <framenum> <.fluid input file> <.fluid output file> [ndivs]" << std::endl;
 	std::cout << "Warning: Argument threadnum is ignored! Use NX_ARGS for setting thread number and ndivs argument to influence the number of tasks (usually ndivs works well if it's equal to the number of cores)." << std::endl;

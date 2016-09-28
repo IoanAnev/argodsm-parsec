@@ -28,7 +28,8 @@ elif [ $VERSION = "serial" ]; then
 
 elif [ $VERSION = "ompss" ] || [ $VERSION="ompss_instr" ]; then
 
-	export NX_ARGS="$EXTRA_ARGS --threads=${NTHREADS}"
+	export OMP_NUM_THREADS=${NTHREADS}
+	export NX_ARGS="$EXTRA_ARGS"
 
 fi
 

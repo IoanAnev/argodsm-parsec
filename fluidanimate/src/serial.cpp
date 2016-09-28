@@ -1004,7 +1004,7 @@ int main(int argc, char *argv[])
 #endif
 
 std::cout << argc << std::endl;
-  if(argc < 5 || argc >= 6)
+  if(argc < 5 || argc >= 7)
   {
     std::cout << "Usage: " << argv[0] << " <threadnum> <framenum> <.fluid input file> <.fluid output file> [ndivs]" << std::endl;
 	std::cout << "Warning: Argument ndivs is ignored in serial version." << std::endl;

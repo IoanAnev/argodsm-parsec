@@ -26,7 +26,8 @@ mkdir -p ${ROOT}/streamcluster/outputs
 #SPECIFY RUNTIME THREADS
 case ${VERSION} in
     ompss*)
-        export NX_ARGS="$EXTRA_ARGS --threads=${NTHREADS} ${NX_ARGS}"
+	export OMP_NUM_THREADS=${NTHREADS}
+        export NX_ARGS="$EXTRA_ARGS ${NX_ARGS}"
         ;;
     omp* )
 	    export OMP_NUM_THREADS=${NTHREADS}

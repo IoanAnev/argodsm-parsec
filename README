@@ -82,7 +82,7 @@ Warning! If you are compiling canneal for ARMv8 architecture, you need to edit c
 
 ==== Dependencies =====
 
-PARSEC-BSC comes bundled with two libraries: GNU Science Library (GSL) and ImageMagick 6.3.6. Currently you need both of them to compile 
+PARSEC-BSC comes bundled with two libraries: GNU Science Library (GSL). Currently you need both of them to compile 
 Ferret. Just use the provided build script inside "parseclibs" to build both libraries:
 
 * As of revision 568, ImageMagick has been removed, ferret no longer requires it.  
@@ -95,7 +95,7 @@ Once you are done, you can compile Ferret. Its Makefiles already link against th
 
 ==== Executing PARSECSs ====
 
-To execute a benchmark you can run the executable benchmark-version from the "bin" folder in each application.
+To execute a benchmark you can run the executable benchmark-version from the "bin" folder for each application.
 
 run.sh <version> <load> <nthreads>
  	
