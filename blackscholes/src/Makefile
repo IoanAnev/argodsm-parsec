@@ -1,5 +1,5 @@
 
-CC		= gcc
+CC		= g++
 SRC     = blackscholes.c
 CSRC    = blackscholes.c
 TARGET  = blackscholes-serial 
