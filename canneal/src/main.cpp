@@ -109,15 +109,15 @@ int main (int argc, char * const argv[]) {
 		exit(1);
 	}
 
-	int num_threads = 8;
+	int num_threads = argv[1];
 	if(argc > 6) {
 		num_threads = atoi(argv[6]);
 	}
 
 #else
 
-	if(argc != 5 && argc != 6) {
-		cout << "Usage: " << argv[0] << " NTHREADS NSWAPS TEMP NETLIST [NSTEPS]" << endl;
+	if(argc != 6 && argc != 7) {
+		cout << "Usage: " << argv[0] << " NTHREADS NSWAPS TEMP NETLIST NSTEPS [NTASKS]\nWarning: NTASKS has no effect in the serial version" << endl;
 		exit(1);
 	}	
 
@@ -155,7 +155,7 @@ int main (int argc, char * const argv[]) {
 	
 	//argument 5 (optional) is the number of temperature steps before termination
 	int number_temp_steps = -1;
-        if(argc == 6) {
+        if(argc >= 6) {
 		number_temp_steps = atoi(argv[5]);
 		cout << "number of temperature steps: " << number_temp_steps << endl;
         }
