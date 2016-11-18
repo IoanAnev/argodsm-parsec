@@ -24,8 +24,8 @@ mkdir -p ${ROOT}/facesim/outputs
 #ADD THREADS/PARTITIONING SCHEME
 case ${VERSION} in
     ompss*)
-	export OMP_NUM_THREADS=${NTHREADS}
-        NX_ARGS="$EXTRA_ARGS ${NX_ARGS}"
+		export OMP_NUM_THREADS=${NTHREADS}
+        export NX_ARGS="$EXTRA_ARGS ${NX_ARGS}"
         ;;
     omp* )
 	    export OMP_NUM_THREADS=${NTHREADS}

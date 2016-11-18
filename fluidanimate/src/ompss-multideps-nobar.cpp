@@ -1212,7 +1212,7 @@ void AdvanceFrameMT(int threadnum, std::vector< vector<int> > neighborhood, std:
   //#pragma omp taskwait
   #pragma omp task in( e ) label(endofiteration) out(dependency_past[ii+1])
   {
-      #fprintf(stdout, "End of Iteration\n");
+      //fprintf(stdout, "End of Iteration\n");
       fflush(stdout);
       for(int j = 0; j<threadnum; ++j) {
          compute_particles(j, &particles[j] );
