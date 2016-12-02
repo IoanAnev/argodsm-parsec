@@ -187,7 +187,7 @@ int main (int argc, char* argv[])
 	} else {
 	    //omp_set_num_threads(parse_args.Get_Integer_Value("-threads"));
 	    OMPSS_POOL& pool = *OMPSS_POOL::Singleton();
-	    if (!pool.Set_n_divisions(parse_args.Get_Integer_Value ("-threads")))
+	    if (!pool.Set_n_divisions(parse_args.Get_Integer_Value ("-ndivs")))
 	    {
 		printf ("Error: could not set the -threads value\n");
 	    }
