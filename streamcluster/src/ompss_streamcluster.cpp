@@ -766,7 +766,7 @@ public:
     {
       k1 = p*bsize; k2 = k1+bsize; if (p == nproc-1) k2 = num;
       nanos_current_socket(p%NUMANODES);
-      #pragma omp task out(dest[k1*dim:k2*dim],count) firstprivate(k1,k2) label(SIMSTREAM-COORD-INIT)
+      #pragma omp task out(dest[k1*dim:k2*dim]) firstprivate(k1,k2) label(SIMSTREAM-COORD-INIT) concurrent(count)
       {
         //int thid = omp_get_thread_num();
         //fprintf(stderr,"Task of processor %d is being executed by thread %d\n",p,thid);
@@ -775,6 +775,7 @@ public:
             dest[i*dim + k] = lrand48()/(float)INT_MAX;
           }
           n--;
+          #pragma omp atomic
           count++;
         }
       }
