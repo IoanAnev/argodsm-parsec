@@ -3,9 +3,10 @@
 // Black-Scholes
 // Analytical method for calculating European Options
 //
-// 
 // Reference Source: Options, Futures, and Other Derivatives, 3rd Edition, Prentice 
 // Hall, John C. Hull,
+//
+// ArgoDSM/OpenMP version written by Ioannis Anevlavis - Eta Scale AB
 
 #include "argo.hpp"
 
@@ -23,7 +24,7 @@
 
 #define NUM_RUNS 100
 
-// Macro for only node0 to do the stuff
+// Macro for only node0 to do stuff
 #define WEXEC(rank, inst) ({ if ((rank) == 0) inst; })
 
 typedef struct OptionData_ {

@@ -9,7 +9,8 @@ task-based model easy, and offer important insight to the HPC community in regar
 and programmability of such models.
 
 All task-based implementations included in this distribution (OmpSs and OpenMP 4.0) have been 
-developed by the Barcelona Supercomputing Center. 
+developed by the Barcelona Supercomputing Center. ArgoDSM/OpenMP implementations have been de-
+veloped by Ioannis Anevlavis - Eta Scale AB.
 
 List of available task-based implementations in the PARSECSs suite:
 
@@ -17,6 +18,8 @@ OmpSs: 		blackscholes, bodytrack, canneal, dedup, facesim, ferret, fluidanimate,
 			streamcluster, swaptions, x264
 
 OpenMP 4.0:	blackscholes, canneal, dedup, facesim, ferret, fluidanimate, freqmine, swaptions
+
+ArgoDSM/OpenMP: blackscholes, swaptions
 
 ==== References ====
 
@@ -57,18 +60,19 @@ Available versions:
 	- ompss_instr: Same as ompss but with instrumetation enabled, creating a different executable.
 	- omp4: Our parallel implementation using OpenMP 3.0/4.0 tasks.
 	- tbb: Not Supported!
+  - argo: Parallel implementation using ArgoDSM/OpenMP (OpenMP 2.0 features).
 
 Alternatively, you may want to build the benchmarks manually.  For most benchmarks,
 blackscholes, canneal, dedup, facesim, ferret, fluianimate, freqmine, swaptions
 compilation and installation is done with the following commands:
 
-make version=<serial | pthreads | openmp | omp2 | ompss | ompss_instr>                  #choose one version - e.g. make version=ompss
+make version=<serial | pthreads | openmp | omp2 | ompss | ompss_instr | argo>                  #choose one version - e.g. make version=ompss
 
-make version=<serial | pthreads | openmp | omp2 | ompss | ompss_instr> install 	        #this will install the executables in the bin dir
+make version=<serial | pthreads | openmp | omp2 | ompss | ompss_instr | argo> install 	        #this will install the executables in the bin dir
 
 To clean, run 
 
-make version=<serial | pthreads | openmp | omp2 | ompss | ompss_instr> clean            #Clean files of the selected version
+make version=<serial | pthreads | openmp | omp2 | ompss | ompss_instr | argo> clean            #Clean files of the selected version
 
 In case the benchmark uses autotools, first do an autoreconf -fiv and then run the configure 
 script. Take a look at the build script of each benchmark (in ${ROOT}/benchmark-name/bench) or just list the help
