@@ -7,7 +7,6 @@
 
 #ifdef ENABLE_ARGO
 #include "argo.hpp"
-#include "../../common/wtime.hpp"
 #endif
 
 #include <omp.h>
@@ -395,7 +394,7 @@ int main(int argc, char *argv[])
 			swaptions[i].dStrike =  0.1 + ((int)(49*RanUnif(&seed)))*0.1; //strikes ranging from 0.1 to 5.0 in steps of 0.1 
 		}
 	}
-	argo_barrier();
+	argo::barrier();
 
 	//#pragma omp parallel for private(i, k, j) schedule(SCHED_POLICY)
 	for (i = beg; i < end; i++) {
@@ -451,7 +450,7 @@ int main(int argc, char *argv[])
 	int threadID=0;
 	worker(&threadID);
 #ifdef ENABLE_ARGO
-	argo_barrier();
+	argo::barrier();
 #endif
 #endif //ENABLE_THREADS
 	WEXEC(workrank, std::cout << "Critical code execution time: " << time(NULL) - startt << std::endl);
@@ -489,8 +488,6 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef ENABLE_ARGO
-	print_argo_stats();
-
 	argo::finalize();
 #endif
 

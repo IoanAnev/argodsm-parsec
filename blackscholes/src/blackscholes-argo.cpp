@@ -9,7 +9,6 @@
 // ArgoDSM/OpenMP version written by Ioannis Anevlavis - Eta Scale AB
 
 #include "argo.hpp"
-#include "../../common/wtime.hpp"
 
 #include <omp.h>
 #include <cmath>
@@ -316,7 +315,7 @@ int main (int argc, char **argv)
 			}
 		}
 	}
-	argo_barrier();
+	argo::barrier();
 
 	rv = fclose(file);
 	if(rv != 0) {
@@ -360,7 +359,7 @@ int main (int argc, char **argv)
 
 	gettimeofday(&start,NULL);
 	bs_thread();
-	argo_barrier();
+	argo::barrier();
 	gettimeofday(&stop,NULL);
 
 #ifdef ENABLE_PARSEC_HOOKS
@@ -411,8 +410,6 @@ int main (int argc, char **argv)
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_bench_end();
 #endif
-
-	print_argo_stats();
 
 	argo::finalize();
 
