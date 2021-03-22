@@ -2,18 +2,17 @@
 
 // Black-Scholes
 // Analytical method for calculating European Options
-//
 // 
 // Reference Source: Options, Futures, and Other Derivatives, 3rd Edition, Prentice 
 // Hall, John C. Hull,
 //
 // OmpSs/OpenMP 4.0 versions written by Dimitrios Chasapis and Iulian Brumar - Barcelona Supercomputing Center
 //
-// OmpSs-2 version written by Ioannis Anevlavis - Eta Scale AB
+// OmpSs-2@Cluster version written by Ioannis Anevlavis - Eta Scale AB
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <string.h>
 #include <sys/time.h>
 
@@ -22,12 +21,12 @@
 #endif
 
 // Multi-threaded OpenMP header
-//#include <omp.h>
+// #include <omp.h>
 
 #define BSIZE_UNIT 1024
 int BSIZE;
 
-//Precision to use for calculations
+// Precision to use for calculations
 #define fptype float
 
 #define NUM_RUNS 100
@@ -39,7 +38,7 @@ typedef struct OptionData_ {
 	fptype divq;       // dividend rate
 	fptype v;          // volatility
 	fptype t;          // time to maturity or option expiration in years 
-	//     (1yr = 1.0, 6mos = 0.5, 3mos = 0.25, ..., etc)  
+			   // (1yr = 1.0, 6mos = 0.5, 3mos = 0.25, ..., etc)
 	char OptionType;   // Option type.  "P"=PUT, "C"=CALL
 	fptype divs;       // dividend vals (not used in this test)
 	fptype DGrefval;   // DerivaGem Reference Value
@@ -55,7 +54,6 @@ fptype * rate;
 fptype * volatility;
 fptype * otime;
 int numError = 0;
-//int nThreads;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -132,7 +130,7 @@ void print_xmm(fptype in, char* s) {
 //////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
-//#pragma oss task input([bsize]sptprice,[bsize]strike,[bsize]rate,[bsize]volatility,[bsize]time,[bsize]otype,timet) output([bsize]OptionPrice) label("BlkSchlsEqEuroNoDiv")
+// #pragma oss task input([bsize]sptprice,[bsize]strike,[bsize]rate,[bsize]volatility,[bsize]time,[bsize]otype,timet) output([bsize]OptionPrice) label("BlkSchlsEqEuroNoDiv")
 void BlkSchlsEqEuroNoDiv( fptype sptprice[BSIZE],
 		fptype strike[BSIZE], fptype rate[BSIZE], fptype volatility[BSIZE],
 		fptype time[BSIZE], int otype[BSIZE], float timet, fptype OptionPrice[BSIZE], int bsize)
@@ -140,7 +138,7 @@ void BlkSchlsEqEuroNoDiv( fptype sptprice[BSIZE],
 	int i;
 
 	for (i=0; i<bsize; i++) {
-		// local private working variables for the calculation
+		// Local private working variables for the calculation
 		fptype xStockPrice;
 		fptype xStrikePrice;
 		fptype xRiskFreeRate;
@@ -209,7 +207,7 @@ void BlkSchlsEqEuroNoDiv_inline( fptype *sptprice,
 	int i;
 
 	for (i=0; i<size; i++) {
-		// local private working variables for the calculation
+		// Local private working variables for the calculation
 		fptype xStockPrice;
 		fptype xStrikePrice;
 		fptype xRiskFreeRate;
@@ -276,28 +274,28 @@ void BlkSchlsEqEuroNoDiv_inline( fptype *sptprice,
 //////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
-void bs_thread(void *tid_ptr,fptype *prices) {
+void bs_thread(fptype *prices) {
 	int i, j;
 	fptype priceDelta;
-	int tid = *(int *)tid_ptr;
 
 	for (j=0; j<NUM_RUNS; j++) {
 		for (i=0; i<=(numOptions-BSIZE); i+=BSIZE) {
 			/* Calling main function to calculate option value based on 
 			 * Black & Sholes's equation.
 			 */
-#pragma oss task in(sptprice[i],strike[i],rate[i],volatility[i],otime[i],otype[i]) out(prices[i]) label("BlkSchlsEqEuroNoDiv")
+			#pragma oss task in(sptprice[i;BSIZE],strike[i;BSIZE],rate[i;BSIZE],volatility[i;BSIZE],otime[i;BSIZE],otype[i;BSIZE]) out(prices[i;BSIZE]) label("BlkSchlsEqEuroNoDiv")
 			BlkSchlsEqEuroNoDiv( &sptprice[i], &strike[i],
 					&rate[i], &volatility[i], &otime[i],
 					&otype[i], 0, &prices[i], BSIZE);
 		}
+		#pragma oss task in(sptprice[i;(numOptions-i)],strike[i;(numOptions-i)],rate[i;(numOptions-i)],volatility[i;(numOptions-i)],otime[i;(numOptions-i)],otype[i;(numOptions-i)]) out(prices[i;(numOptions-i)]) label("BlkSchlsEqEuroNoDiv")
 		BlkSchlsEqEuroNoDiv( &sptprice[i], &strike[i],
 				&rate[i], &volatility[i], &otime[i],
-				&otype[i], 0, &prices[i], numOptions-i); //el thread creador tambe executa les iteracions sobrants d'anar de BS en BS
+				&otype[i], 0, &prices[i], numOptions-i); // el thread creador tambe executa les iteracions sobrants d'anar de BS en BS
 
-		//We put a barrier here to avoid overlapping the execution of
+		// We put a barrier here to avoid overlapping the execution of
 		// tasks in different runs
-#pragma oss taskwait
+		#pragma oss taskwait
 #ifdef ERR_CHK
 		for (i=0; i<numOptions; i++) {
 			priceDelta = data[i].DGrefval - prices[i];
@@ -328,25 +326,24 @@ int main (int argc, char **argv)
 	__parsec_bench_begin(__parsec_blackscholes);
 #endif
 
-	if (argc < 4)
+	if (argc < 3)
 	{
-		printf("Usage:\n\t%s <nthreads> <inputFile> <outputFile> [blocksize]\n", argv[0]);
+		printf("Usage:\n\t%s <inputFile> <outputFile> [blocksize]\n", argv[0]);
 		printf("Warning: nthreads is ignored! Use NX_ARGS=\"--threads=<nthreads>\" instead\n");
 		exit(1);
 	}
 
-	char *inputFile = argv[2];
-	char *outputFile = argv[3];
-	int nthreads = atoi(argv[1]);
+	char *inputFile = argv[1];
+	char *outputFile = argv[2];
 
-	if(argc > 4 ) {
-		BSIZE = atoi(argv[4]);
+	if(argc > 3 ) {
+		BSIZE = atoi(argv[3]);
 	}
 	else {
 		BSIZE = BSIZE_UNIT;
 	}
 
-	//Read input data from file
+	// Read input data from file
 	file = fopen(inputFile, "r");
 	if(file == NULL) {
 		printf("ERROR: Unable to open file `%s'.\n", inputFile);
@@ -361,13 +358,12 @@ int main (int argc, char **argv)
 	if(BSIZE > numOptions) {
 		printf("ERROR: Block size larger than number of options. Please reduce the block size, or use larger data size.\n");
 		exit(1);
-		//printf("WARNING: Not enough work, reducing number of threads to match number of options.\n");
-		//nThreads = numOptions;
 	}
 
-	// alloc spaces for the option data
-	data = (OptionData*)malloc(numOptions*sizeof(OptionData));
-	prices = (fptype*)malloc(numOptions*sizeof(fptype));
+	// Alloc spaces for the option data
+	data = (OptionData*)nanos6_lmalloc(numOptions*sizeof(OptionData));
+	prices = (fptype*)nanos6_dmalloc(numOptions*sizeof(fptype), nanos6_equpart_distribution, 0, NULL);
+	
 	for ( loopnum = 0; loopnum < numOptions; ++ loopnum )
 	{
 		rv = fscanf(file, "%f %f %f %f %f %f %c %f %f", &data[loopnum].s, &data[loopnum].strike, &data[loopnum].r, &data[loopnum].divq, &data[loopnum].v, &data[loopnum].t, &data[loopnum].OptionType, &data[loopnum].divs, &data[loopnum].DGrefval);
@@ -389,16 +385,17 @@ int main (int argc, char **argv)
 #define PAD 256
 #define LINESIZE 64
 
-	buffer = (fptype *) malloc(5 * numOptions * sizeof(fptype) + PAD);
+	buffer = (fptype *) nanos6_dmalloc(5 * numOptions * sizeof(fptype) + PAD, nanos6_equpart_distribution, 0, NULL);
 	sptprice = (fptype *) (((unsigned long long)buffer + PAD) & ~(LINESIZE - 1));
 	strike = sptprice + numOptions;
 	rate = strike + numOptions;
 	volatility = rate + numOptions;
 	otime = volatility + numOptions;
 
-	buffer2 = (int *) malloc(numOptions * sizeof(fptype) + PAD);
+	buffer2 = (int *) nanos6_dmalloc(numOptions * sizeof(fptype) + PAD, nanos6_equpart_distribution, 0, NULL);
 	otype = (int *) (((unsigned long long)buffer2 + PAD) & ~(LINESIZE - 1));
 
+	#pragma oss task in(data[0;numOptions]) out(otype[0;numOptions], sptprice[0;numOptions], strike[0;numOptions], rate[0;numOptions], volatility[0;numOptions], otime[0;numOptions]) label("initialize data")
 	for (i=0; i<numOptions; i++) {
 		otype[i]      = (data[i].OptionType == 'P') ? 1 : 0;
 		sptprice[i]   = data[i].s;
@@ -407,6 +404,7 @@ int main (int argc, char **argv)
 		volatility[i] = data[i].v;
 		otime[i]      = data[i].t;
 	}
+	#pragma oss taskwait
 
 	printf("Size of data: %lu\n", numOptions * (sizeof(OptionData) + sizeof(int)));
 
@@ -414,18 +412,15 @@ int main (int argc, char **argv)
 	__parsec_roi_begin();
 #endif
 
-	//do work
-	int tid=0;
-	//omp_set_num_threads(nThreads);
 	gettimeofday(&start,NULL);
-	bs_thread(&tid,prices);
+	bs_thread(prices);
 	gettimeofday(&stop,NULL);
 
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_roi_end();
 #endif
 
-	//Write prices to output file
+	// Write prices to output file
 	file = fopen(outputFile, "w");
 	if(file == NULL) {
 		printf("ERROR: Unable to open file `%s'.\n", outputFile);
@@ -454,12 +449,16 @@ int main (int argc, char **argv)
 #ifdef ERR_CHK
 	printf("Num Errors: %d\n", numError);
 #endif
-	free(data);
-	free(prices);
+	// Deallocate locally allocated memory
+	nanos6_lfree(data, numOptions*sizeof(OptionData));
+	
+	// Deallocate globally allocated memory
+	nanos6_dfree(prices, numOptions*sizeof(fptype));
+	nanos6_dfree(buffer, 5 * numOptions * sizeof(fptype) + PAD);
+	nanos6_dfree(buffer2, numOptions * sizeof(fptype) + PAD);
 
 	elapsed = 1000000 * (stop.tv_sec - start.tv_sec);
 	elapsed += stop.tv_usec - start.tv_usec;
-
 	printf("par_sec_time_us:%lu\n",elapsed);
 
 #ifdef ENABLE_PARSEC_HOOKS
@@ -468,4 +467,3 @@ int main (int argc, char **argv)
 
 	return 0;
 }
-

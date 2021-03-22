@@ -16,11 +16,13 @@ ifdef version
 	CSRC    = $(M4_SRC)
 	MT      = -DENABLE_THREADS
 	CFLAGS	+= -pthread
+	CFLAGS  += -DERR_CHK
 	TARGET  = blackscholes-pthreads
 endif
 ifeq "$(version)" "omp2"
 	MT    	= -DENABLE_OPENMP
 	CFLAGS	+= -fopenmp -DSCHED_POLICY=static
+	CFLAGS  += -DERR_CHK
 	TARGET	= blackscholes-omp2
 endif
 ifeq "$(version)" "ompss"
@@ -28,6 +30,7 @@ ifeq "$(version)" "ompss"
 	CSRC	= blackscholes-ompss.c
 	MT      = -DENABLE_OMPSS
 	CFLAGS	+= --ompss --no-copy-deps
+	CFLAGS  += -DERR_CHK
 	TARGET  = blackscholes-ompss
 endif
 ifeq "$(version)" "ompss_instr"
@@ -35,6 +38,7 @@ ifeq "$(version)" "ompss_instr"
 	CSRC	= blackscholes-ompss.c
 	MT      = -DENABLE_OMPSS
 	CFLAGS	+= --ompss --no-copy-deps --instrument
+	CFLAGS  += -DERR_CHK
 	TARGET  = blackscholes-ompss_instr
 endif
 ifeq "$(version)" "ompss-2"
@@ -42,6 +46,7 @@ ifeq "$(version)" "ompss-2"
 	CSRC	= blackscholes-ompss-2.c
 	MT      = -DENABLE_OMPSS
 	CFLAGS	+= --ompss-2 --no-copy-deps
+	CFLAGS  += -DERR_CHK
 	TARGET  = blackscholes-ompss-2
 endif
 ifeq "$(version)" "ompss-2_instr"
@@ -49,18 +54,36 @@ ifeq "$(version)" "ompss-2_instr"
 	CSRC	= blackscholes-ompss-2.c
 	MT      = -DENABLE_OMPSS
 	CFLAGS	+= --ompss-2 --no-copy-deps --instrument
+	CFLAGS  += -DERR_CHK
 	TARGET  = blackscholes-ompss-2_instr
+endif
+ifeq "$(version)" "ompss-2-cluster"
+	CC      = mcc
+	CSRC	= blackscholes-ompss-2-cluster.c
+	MT      = -DENABLE_OMPSS
+	CFLAGS	+= --ompss-2 --no-copy-deps
+	CFLAGS  += -DERR_CHK
+	TARGET  = blackscholes-ompss-2-cluster
+endif
+ifeq "$(version)" "ompss-2-cluster_instr"
+	CC      = mcc
+	CSRC	= blackscholes-ompss-2-cluster.c
+	MT      = -DENABLE_OMPSS
+	CFLAGS	+= --ompss-2 --no-copy-deps --instrument
+	CFLAGS  += -DERR_CHK
+	TARGET  = blackscholes-ompss-2-cluster_instr
 endif
 ifeq "$(version)" "omp4"
 	CC      = gcc
 	CSRC	= blackscholes-omp.c
 	MT      = -DENABLE_OPENMP
 	CFLAGS	+= -fopenmp
+	CFLAGS  += -DERR_CHK
 	TARGET	= blackscholes-omp4
 endif
 ifeq "$(version)" "argo"
 	CC      = mpic++
-	CSRC		= blackscholes-argo.cpp
+	CSRC	= blackscholes-argo.cpp
 	CFLAGS	+= -fopenmp -std=c++11
 	CFLAGS  += -DSCHED_POLICY=static -DERR_CHK
 	CFLAGS  += -L${ARGO_INSTALL_DIRECTORY}/build/lib
