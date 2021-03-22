@@ -37,6 +37,20 @@ ifeq "$(version)" "ompss_instr"
 	CFLAGS	+= --ompss --no-copy-deps --instrument
 	TARGET  = blackscholes-ompss_instr
 endif
+ifeq "$(version)" "ompss-2"
+	CC      = mcc
+	CSRC	= blackscholes-ompss-2.c
+	MT      = -DENABLE_OMPSS
+	CFLAGS	+= --ompss-2 --no-copy-deps
+	TARGET  = blackscholes-ompss-2
+endif
+ifeq "$(version)" "ompss-2_instr"
+	CC      = mcc
+	CSRC	= blackscholes-ompss-2.c
+	MT      = -DENABLE_OMPSS
+	CFLAGS	+= --ompss-2 --no-copy-deps --instrument
+	TARGET  = blackscholes-ompss-2_instr
+endif
 ifeq "$(version)" "omp4"
 	CC      = gcc
 	CSRC	= blackscholes-omp.c
