@@ -161,7 +161,7 @@ float pspeedy(Points *points, float z, long *kcenter)
 for (int p = 0; p < nproc; p++) {
 k1 = bsize*p; k2 = k1 + bsize; if (p == nproc-1) k2 = points->num;
       nanos_current_socket(p%NUMANODES);
-  #pragma omp task inout(po[k1:k2]) firstprivate(k1,k2) label(PSPEEDY-FIRST-CENTER)
+  #pragma omp task inout(po[k1:k2]) firstprivate(k1,k2) label("PSPEEDY-FIRST-CENTER")
   {
     for( int k = k1; k < k2; k++ )    {
       float distance = dist(points->p[k],points->p[0],points->dim);
@@ -183,7 +183,7 @@ k1 = bsize*p; k2 = k1 + bsize; if (p == nproc-1) k2 = points->num;
         for (int p = 0; p < nproc; p++) {
           k1 = p*bsize; k2 = k1 + bsize; if (p == nproc-1) k2 = points->num;
       nanos_current_socket(p%NUMANODES);
-          #pragma omp task inout(po[k1:k2]) firstprivate(k1,k2) label(PSPEEDY-OPEN-CENTERS)
+          #pragma omp task inout(po[k1:k2]) firstprivate(k1,k2) label("PSPEEDY-OPEN-CENTERS")
           {
 	        for( int k = k1; k < k2; k++ )  {
 	          float distance = dist(points->p[i],points->p[k],points->dim);
@@ -203,7 +203,7 @@ k1 = bsize*p; k2 = k1 + bsize; if (p == nproc-1) k2 = points->num;
 for (int p = 0; p < nproc; p++) {
 k1 = p*bsize; k2 = k1 + bsize; if (p == nproc-1) k2 = points->num;
 //this task changes native output. The atomic might be the culprit
-  //#pragma omp task inout(po[k1:k2]) firstprivate(k1,k2,mytotal,p) label(PSPEEDY-COST-REDUCTION)
+  //#pragma omp task inout(po[k1:k2]) firstprivate(k1,k2,mytotal,p) label("PSPEEDY-COST-REDUCTION")
   //{ 
   mytotal = 0;
   for( int k = k1; k < k2; k++ )  {
@@ -276,7 +276,7 @@ for (int p = 0; p < nproc; p++) {
       nanos_current_socket(p%NUMANODES);
   #pragma omp task concurrent([num_points]po,[count]gl_lower) \
    inout(switch_membership[k1:k2]) \
-   firstprivate(k1,k2,p,count) shared(gl_cost_of_opening_x,gl_number_of_centers_to_close) label(PGAIN-UPDT-COSTS)
+   firstprivate(k1,k2,p,count) shared(gl_cost_of_opening_x,gl_number_of_centers_to_close) label("PGAIN-UPDT-COSTS")
   {
         //int thid = omp_get_thread_num();
         //fprintf(stderr,"Task of processor %d is being executed by thread %d\n",p,thid);
@@ -346,7 +346,7 @@ gl_cost_of_opening_x += z;
     for (int p = 0; p < nproc; p++) {
       k1 = bsize*p; k2 = k1 + bsize; if (p == nproc-1) k2 = points->num;
       nanos_current_socket(p%NUMANODES);
-      #pragma omp task inout(po[k1:k2]) in(switch_membership[k1:k2],[count]gl_lower) label(PGAIN-SAVE-MONEY)
+      #pragma omp task inout(po[k1:k2]) in(switch_membership[k1:k2],[count]gl_lower) label("PGAIN-SAVE-MONEY")
       {
         for ( int i = k1; i < k2; i++ ) {
           bool close_center = gl_lower[center_table[points->p[i].assign]] > 0 ;
@@ -530,7 +530,7 @@ float pkmedian(Points *points, long kmin, long kmax, long* kfinal)
     k1 = bsize * p; k2 = k1 + bsize; 
     if (p == nproc-1) k2 = points->num;
       nanos_current_socket(p%NUMANODES);
-    #pragma omp task in(po[k1:k2]) concurrent(hiz) firstprivate(k1,k2) label(PKMEDIAN-HIZ)
+    #pragma omp task in(po[k1:k2]) concurrent(hiz) firstprivate(k1,k2) label("PKMEDIAN-HIZ")
     {
     double myhiz = 0;
     for (long kk=k1;kk < k2; kk++ ) {
@@ -551,7 +551,7 @@ float pkmedian(Points *points, long kmin, long kmax, long* kfinal)
       k1 = bsize * p; k2 = k1 + bsize; 
       if (p == nproc-1) k2 = points->num;
       nanos_current_socket(p%NUMANODES);
-      #pragma omp task inout(po[k1:k2]) firstprivate(k1,k2) label(PKMEDIAN-ALL-FL)
+      #pragma omp task inout(po[k1:k2]) firstprivate(k1,k2) label("PKMEDIAN-ALL-FL")
       {
         for (long kk=k1;kk<k2;kk++) {
           points->p[kk].assign = kk;
@@ -766,7 +766,7 @@ public:
     {
       k1 = p*bsize; k2 = k1+bsize; if (p == nproc-1) k2 = num;
       nanos_current_socket(p%NUMANODES);
-      #pragma omp task out(dest[k1*dim:k2*dim]) firstprivate(k1,k2) label(SIMSTREAM-COORD-INIT) concurrent(count)
+      #pragma omp task out(dest[k1*dim:k2*dim]) firstprivate(k1,k2) label("SIMSTREAM-COORD-INIT") concurrent(count)
       {
         //int thid = omp_get_thread_num();
         //fprintf(stderr,"Task of processor %d is being executed by thread %d\n",p,thid);
@@ -871,7 +871,7 @@ void streamCluster( PStream* stream,
   for(int p = 0; p < nproc; p++) {
     k1 = p*bsize; k2 = k1 + bsize; if (p == nproc-1) k2 = chunksize;
       nanos_current_socket(p%NUMANODES);
-    #pragma omp task out(po[k1:k2]) firstprivate(k1,k2,block) label(POINT-COORD-INIT)
+    #pragma omp task out(po[k1:k2]) firstprivate(k1,k2,block) label("POINT-COORD-INIT")
     {
       for( int i = k1; i < k2; i++ ) {
         po[i].coord = &block[i*dim];
@@ -890,7 +890,7 @@ void streamCluster( PStream* stream,
   {
     k1 = p*bsize; k2 = k1 + bsize; if (p == nproc-1) k2 = centersize;
       nanos_current_socket(p%NUMANODES);
-    #pragma omp task out(po[k1:k2]) firstprivate(k1,k2,centerBlock) label(CENTERS-COORD-WEIGHT-INIT)
+    #pragma omp task out(po[k1:k2]) firstprivate(k1,k2,centerBlock) label("CENTERS-COORD-WEIGHT-INIT")
     {
       for( int i = k1; i < k2; i++ ) {
         po[i].coord = &centerBlock[i*dim];
@@ -916,7 +916,7 @@ void streamCluster( PStream* stream,
     {
       k1 = p*bsize; k2 = k1 + bsize; if (p == nproc-1) k2 = points.num;
       nanos_current_socket(p%NUMANODES);
-      #pragma omp task out(po[k1:k2]) firstprivate(k1,k2) label(POINTS-WEIGHT-INIT)
+      #pragma omp task out(po[k1:k2]) firstprivate(k1,k2) label("POINTS-WEIGHT-INIT")
       {
         for( int i = k1; i < k2; i++ ) {
           points.p[i].weight = 1.0;
