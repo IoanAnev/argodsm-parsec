@@ -31,6 +31,18 @@ ifeq "$(version)" "ompss-2_instr"
 	OBJS = ompss-2_streamcluster.o
 	TARGET = streamcluster-ompss-2_instr
 endif
+ifeq "$(version)" "ompss-2-cluster"
+	CXX := mcxx
+	CXXFLAGS := $(CXXFLAGS) -DENABLE_OMPSS --ompss-2 --no-copy-deps
+	OBJS = ompss-2-cluster_streamcluster.o
+	TARGET = streamcluster-ompss-2-cluster
+endif
+ifeq "$(version)" "ompss-2-cluster_instr"
+	CXX := mcxx
+	CXXFLAGS := $(CXXFLAGS) -DENABLE_OMPSS --ompss-2 --no-copy-deps --instrument
+	OBJS = ompss-2-cluster_streamcluster.o
+	TARGET = streamcluster-ompss-2-cluster_instr
+endif
 ifeq "$(version)" "omp2"
 	CXX := g++
 	CXXFLAGS := $(CXXFLAGS) -DSCHED_POLICY=static -fopenmp
