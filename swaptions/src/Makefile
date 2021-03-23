@@ -12,35 +12,49 @@ LIBS:=$(LIBS) -lm
 
 ifdef version
 	ifeq "$(version)" "pthreads" 
-	DEF := $(DEF) -DENABLE_THREADS
+	DEF := $(DEF) -DENABLE_THREADS -DENABLE_OUTPUT
 	CXXFLAGS := $(CXXFLAGS) -pthread
 	EXEC=swaptions-pthreads
 endif
 
 ifeq "$(version)" "ompss"
 	MCXX=mcxx
-	DEF := $(DEF) -DENABLE_OMPSS
+	DEF := $(DEF) -DENABLE_OMPSS -DENABLE_OUTPUT
 	CXXFLAGS := $(CXXFLAGS) --ompss --no-copy-deps
 	EXEC=swaptions-ompss
 endif
 
 ifeq "$(version)" "ompss_instr"
 	MCXX=mcxx
-	DEF := $(DEF) -DENABLE_OMPSS
+	DEF := $(DEF) -DENABLE_OMPSS -DENABLE_OUTPUT
 	CXXFLAGS := $(CXXFLAGS) --ompss --no-copy-deps --instrument
 	EXEC=swaptions-ompss_instr
 endif
 
+ifeq "$(version)" "ompss-2"
+	MCXX=mcxx
+	DEF := $(DEF) -DENABLE_OMPSS_2 -DENABLE_OUTPUT
+	CXXFLAGS := $(CXXFLAGS) --ompss-2 --no-copy-deps
+	EXEC=swaptions-ompss-2
+endif
+
+ifeq "$(version)" "ompss-2_instr"
+	MCXX=mcxx
+	DEF := $(DEF) -DENABLE_OMPSS_2 -DENABLE_OUTPUT
+	CXXFLAGS := $(CXXFLAGS) --ompss-2 --no-copy-deps --instrument
+	EXEC=swaptions-ompss-2_instr
+endif
+
 ifeq "$(version)" "omp2"
 	MCXX=g++
-	DEF := $(DEF) -DENABLE_OMP2
+	DEF := $(DEF) -DENABLE_OMP2 -DENABLE_OUTPUT
 	CXXFLAGS := $(CXXFLAGS) -fopenmp -DSCHED_POLICY=static
 	EXEC=swaptions-omp2
 endif
 
 ifeq "$(version)" "omp4"
 	MCXX=g++
-	DEF := $(DEF) -DENABLE_OMP4
+	DEF := $(DEF) -DENABLE_OMP4 -DENABLE_OUTPUT
 	CXXFLAGS := $(CXXFLAGS) -fopenmp 
 	EXEC=swaptions-omp4
 endif

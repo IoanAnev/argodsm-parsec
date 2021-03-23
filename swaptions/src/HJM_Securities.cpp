@@ -4,6 +4,7 @@
 //Collaborator: Mikhail Smelyanskiy, Jike Chong, Intel
 //OmpSs/OpenMP 4.0 versions written by Dimitrios Chasapis - Barcelona Supercomputing Center
 //ArgoDSM/OpenMP version written by Ioannis Anevlavis - Eta Scale AB
+//OmpSs-2 version written by Ioannis Anevlavis - Eta Scale AB
 
 #ifdef ENABLE_ARGO
 #include "argo.hpp"
@@ -11,6 +12,8 @@
 
 #include <omp.h>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
 
 #include "nr_routines.h"
@@ -89,12 +92,16 @@ void write_to_file()
 }
 
 void * worker(void *arg)
-#ifdef ENABLE_OMPSS
+#if defined(ENABLE_OMPSS) || defined(ENABLE_OMPSS_2)
 {
 	int iSuccess;
 	FTYPE pdSwaptionPrice[2];
 	for(int i=0; i < nSwaptions; i++) {
-#pragma omp task firstprivate(i) private(iSuccess, pdSwaptionPrice) inout(swaptions[i])
+#if defined(ENABLE_OMPSS)
+		#pragma omp task firstprivate(i) private(iSuccess, pdSwaptionPrice) inout(swaptions[i])
+#elif defined(ENABLE_OMPSS_2)
+		#pragma oss task firstprivate(i) private(iSuccess, pdSwaptionPrice) inout(swaptions[i])
+#endif
 		{
 			iSuccess = HJM_Swaption_Blocking(pdSwaptionPrice,  swaptions[i].dStrike, 
 					swaptions[i].dCompounding, swaptions[i].dMaturity, 
@@ -107,21 +114,25 @@ void * worker(void *arg)
 			swaptions[i].dSimSwaptionStdError = pdSwaptionPrice[1];
 		}
 	}
-#pragma omp taskwait
+#if defined(ENABLE_OMPSS)
+	#pragma omp taskwait
+#elif defined(ENABLE_OMPSS_2)
+	#pragma oss taskwait
+#endif
 
 	return NULL;    
 }
 #elif defined(ENABLE_OMP4)
 {
-#pragma omp parallel 
+	#pragma omp parallel 
 	{
-#pragma omp single 
+		#pragma omp single 
 		{
 			int iSuccess;
 			FTYPE pdSwaptionPrice[2];
 			for(int i=0; i < nSwaptions; i++) {
-#pragma omp task firstprivate(i) private(iSuccess, pdSwaptionPrice) //depend(inout: swaptions[i])
-#pragma omp task firstprivate(i) private(iSuccess, pdSwaptionPrice) depend(inout: swaptions[i])
+				#pragma omp task firstprivate(i) private(iSuccess, pdSwaptionPrice) //depend(inout: swaptions[i])
+				#pragma omp task firstprivate(i) private(iSuccess, pdSwaptionPrice) depend(inout: swaptions[i])
 				{
 					iSuccess = HJM_Swaption_Blocking(pdSwaptionPrice,  swaptions[i].dStrike, 
 							swaptions[i].dCompounding, swaptions[i].dMaturity, 
@@ -134,18 +145,18 @@ void * worker(void *arg)
 					swaptions[i].dSimSwaptionStdError = pdSwaptionPrice[1];
 				}
 			}
-#pragma omp taskwait
+			#pragma omp taskwait
 		} //end of single  
 	} //end of parallel region
 	return NULL;    
 }
 #elif defined(ENABLE_OMP2)
 {
-#pragma omp parallel 
+	#pragma omp parallel 
 	{
 		int iSuccess;
 		FTYPE pdSwaptionPrice[2];
-#pragma omp for schedule(SCHED_POLICY)
+		#pragma omp for schedule(SCHED_POLICY)
 		for(int i=0; i < nSwaptions; i++) {
 			iSuccess = HJM_Swaption_Blocking(pdSwaptionPrice,  swaptions[i].dStrike, 
 					swaptions[i].dCompounding, swaptions[i].dMaturity, 
@@ -157,7 +168,7 @@ void * worker(void *arg)
 			swaptions[i].dSimSwaptionMeanPrice = pdSwaptionPrice[0];
 			swaptions[i].dSimSwaptionStdError = pdSwaptionPrice[1];
 		}
-#pragma omp taskwait
+		#pragma omp taskwait
 	} //end of parallel region
 	return NULL;    
 }
@@ -182,7 +193,7 @@ void * worker(void *arg)
 			swaptions[i].dSimSwaptionMeanPrice = pdSwaptionPrice[0];
 			swaptions[i].dSimSwaptionStdError = pdSwaptionPrice[1];
 		}
-#pragma omp taskwait
+		#pragma omp taskwait
 	} //end of parallel region
 	return NULL;    
 }
@@ -221,7 +232,7 @@ void * worker(void *arg)
 
 	return NULL;
 }
-#endif //ENABLE_OMPSS
+#endif // ENABLE_OMPSS || ENABLE_OMPSS_2
 
 //print a little help message explaining how to use this program
 void print_usage(char *name) {
@@ -270,7 +281,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-#if defined(ENABLE_OMPSS) || defined(ENABLE_OMP2) || defined(ENABLE_OMP4) || defined(ENABLE_ARGO)
+#if defined(ENABLE_OMPSS) || defined(ENABLE_OMPSS_2) || defined(ENABLE_OMP2) || defined(ENABLE_OMP4) || defined(ENABLE_ARGO)
 	WEXEC(workrank, printf("Warning! Argumetn -nt is ignored, use NX_ARGS for OMPSs or OMP_NUM_THREADS for OpenMP 4.0\n"));
 #endif
 
@@ -295,7 +306,7 @@ int main(int argc, char *argv[])
 	WEXEC(workrank, printf("Number of Simulations: %d,  Number of threads: %d Number of swaptions: %d\n", NUM_TRIALS, nThreads, nSwaptions));
 	swaption_seed = (long)(2147483647L * RanUnif(&seed));
 
-#if defined ENABLE_THREADS
+#if defined(ENABLE_THREADS)
 	pthread_t      *threads;
 	pthread_attr_t  pthread_custom_attr;
 
@@ -306,7 +317,7 @@ int main(int argc, char *argv[])
 	}
 	threads = (pthread_t *) malloc(nThreads * sizeof(pthread_t));
 	pthread_attr_init(&pthread_custom_attr);
-#elif defined ENABLE_OMPSS || defined ENABLE_OMP2 || defined ENABLE_OMP4 || defined ENABLE_ARGO
+#elif defined(ENABLE_OMPSS) || defined(ENABLE_OMPSS_2) || defined(ENABLE_OMP2) || defined(ENABLE_OMP4) || defined(ENABLE_ARGO)
 	//ignore number of threads
 	nThreads = nSwaptions;
 #else
