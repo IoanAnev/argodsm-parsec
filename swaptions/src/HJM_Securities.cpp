@@ -5,6 +5,7 @@
 //OmpSs/OpenMP 4.0 versions written by Dimitrios Chasapis - Barcelona Supercomputing Center
 //ArgoDSM/OpenMP version written by Ioannis Anevlavis - Eta Scale AB
 //OmpSs-2 version written by Ioannis Anevlavis - Eta Scale AB
+//OmpSs-2@Cluster version written by Ioannis Anevlavis - Eta Scale AB
 
 #ifdef ENABLE_ARGO
 #include "argo.hpp"
@@ -92,14 +93,14 @@ void write_to_file()
 }
 
 void * worker(void *arg)
-#if defined(ENABLE_OMPSS) || defined(ENABLE_OMPSS_2)
+#if defined(ENABLE_OMPSS) || defined(ENABLE_OMPSS_2) || defined(ENABLE_OMPSS_2_CLUSTER)
 {
 	int iSuccess;
 	FTYPE pdSwaptionPrice[2];
 	for(int i=0; i < nSwaptions; i++) {
 #if defined(ENABLE_OMPSS)
 		#pragma omp task firstprivate(i) private(iSuccess, pdSwaptionPrice) inout(swaptions[i])
-#elif defined(ENABLE_OMPSS_2)
+#elif defined(ENABLE_OMPSS_2) || defined(ENABLE_OMPSS_2_CLUSTER)
 		#pragma oss task firstprivate(i) private(iSuccess, pdSwaptionPrice) inout(swaptions[i])
 #endif
 		{
@@ -116,7 +117,7 @@ void * worker(void *arg)
 	}
 #if defined(ENABLE_OMPSS)
 	#pragma omp taskwait
-#elif defined(ENABLE_OMPSS_2)
+#elif defined(ENABLE_OMPSS_2) || defined(ENABLE_OMPSS_2_CLUSTER)
 	#pragma oss taskwait
 #endif
 
@@ -232,7 +233,7 @@ void * worker(void *arg)
 
 	return NULL;
 }
-#endif // ENABLE_OMPSS || ENABLE_OMPSS_2
+#endif // ENABLE_OMPSS || ENABLE_OMPSS_2 || ENABLE_OMPSS_2_CLUSTER
 
 //print a little help message explaining how to use this program
 void print_usage(char *name) {
@@ -281,7 +282,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-#if defined(ENABLE_OMPSS) || defined(ENABLE_OMPSS_2) || defined(ENABLE_OMP2) || defined(ENABLE_OMP4) || defined(ENABLE_ARGO)
+#if defined(ENABLE_OMPSS) || defined(ENABLE_OMPSS_2) || defined(ENABLE_OMPSS_2_CLUSTER) || defined(ENABLE_OMP2) || defined(ENABLE_OMP4) || defined(ENABLE_ARGO)
 	WEXEC(workrank, printf("Warning! Argumetn -nt is ignored, use NX_ARGS for OMPSs or OMP_NUM_THREADS for OpenMP 4.0\n"));
 #endif
 
@@ -317,7 +318,7 @@ int main(int argc, char *argv[])
 	}
 	threads = (pthread_t *) malloc(nThreads * sizeof(pthread_t));
 	pthread_attr_init(&pthread_custom_attr);
-#elif defined(ENABLE_OMPSS) || defined(ENABLE_OMPSS_2) || defined(ENABLE_OMP2) || defined(ENABLE_OMP4) || defined(ENABLE_ARGO)
+#elif defined(ENABLE_OMPSS) || defined(ENABLE_OMPSS_2) || defined(ENABLE_OMPSS_2_CLUSTER) || defined(ENABLE_OMP2) || defined(ENABLE_OMP4) || defined(ENABLE_ARGO)
 	//ignore number of threads
 	nThreads = nSwaptions;
 #else
@@ -371,6 +372,8 @@ int main(int argc, char *argv[])
 
 		// gflag = argo::conew_array<bool>(numtasks);
 		// gseed = argo::conew_<long>(seed);
+#elif defined(ENABLE_OMPSS_2_CLUSTER)
+		(parm *)nanos6_dmalloc(sizeof(parm)*nSwaptions, nanos6_equpart_distribution, 0, NULL);
 #else
 		(parm *)malloc(sizeof(parm)*nSwaptions);
 #endif
@@ -410,6 +413,9 @@ int main(int argc, char *argv[])
 	//#pragma omp parallel for private(i, k, j) schedule(SCHED_POLICY)
 	for (i = beg; i < end; i++) {
 #else
+#ifdef ENABLE_OMPSS_2_CLUSTER
+	#pragma oss task inout(swaptions[0;nSwaptions])
+#endif
 	for (i = 0; i < nSwaptions; i++) {
 #endif
 		swaptions[i].Id = i;
@@ -434,7 +440,9 @@ int main(int argc, char *argv[])
 			for(j=0;j<=swaptions[i].iN-2;++j)
 				swaptions[i].ppdFactors[k][j] = factors[k][j];
 	}
-
+#ifdef ENABLE_OMPSS_2_CLUSTER
+	#pragma oss taskwait
+#endif
 
 	// **********Calling the Swaption Pricing Routine*****************
 
@@ -486,6 +494,8 @@ int main(int argc, char *argv[])
 
 #ifdef ENABLE_ARGO
 	argo::codelete_array(swaptions);
+#elif defined(ENABLE_OMPSS_2_CLUSTER)
+	nanos6_dfree(swaptions, sizeof(parm)*nSwaptions);
 #else
 	free(swaptions);
 #endif

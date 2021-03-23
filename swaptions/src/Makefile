@@ -45,6 +45,20 @@ ifeq "$(version)" "ompss-2_instr"
 	EXEC=swaptions-ompss-2_instr
 endif
 
+ifeq "$(version)" "ompss-2-cluster"
+	MCXX=mcxx
+	DEF := $(DEF) -DENABLE_OMPSS_2_CLUSTER -DENABLE_OUTPUT
+	CXXFLAGS := $(CXXFLAGS) --ompss-2 --no-copy-deps
+	EXEC=swaptions-ompss-2-cluster
+endif
+
+ifeq "$(version)" "ompss-2-cluster_instr"
+	MCXX=mcxx
+	DEF := $(DEF) -DENABLE_OMPSS_2_CLUSTER -DENABLE_OUTPUT
+	CXXFLAGS := $(CXXFLAGS) --ompss-2 --no-copy-deps --instrument
+	EXEC=swaptions-ompss-2-cluster_instr
+endif
+
 ifeq "$(version)" "omp2"
 	MCXX=g++
 	DEF := $(DEF) -DENABLE_OMP2 -DENABLE_OUTPUT
