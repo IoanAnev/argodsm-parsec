@@ -59,6 +59,22 @@ int numError = 0;
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+static void task_chunk(int* beg,
+		int* end,
+		int* chunk,
+		const int size,
+		const int index,
+		const int bsize)
+{
+	*chunk = (size - index > bsize) ? bsize : size - index;
+	*beg = index;
+	*end = index + *chunk;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // Cumulative Normal Distribution Function
 // See Hull, Section 11.8, P.243-244
 #define inv_sqrt_2xPI 0.39894228040143270286
@@ -276,22 +292,24 @@ void BlkSchlsEqEuroNoDiv_inline( fptype *sptprice,
 //////////////////////////////////////////////////////////////////////////////////////
 void bs_thread(fptype *prices) {
 	int i, j;
+	int beg, end, chunk;
 	fptype priceDelta;
 
-	for (j=0; j<NUM_RUNS; j++) {
-		for (i=0; i<=(numOptions-BSIZE); i+=BSIZE) {
+	for (j = 0; j < NUM_RUNS; j++) {
+		for (i = 0; i < numOptions; i += BSIZE) {
+			task_chunk(&beg, &end, &chunk, numOptions, i, BSIZE);
+
 			/* Calling main function to calculate option value based on 
 			 * Black & Sholes's equation.
 			 */
-			#pragma oss task in(sptprice[i;BSIZE],strike[i;BSIZE],rate[i;BSIZE],volatility[i;BSIZE],otime[i;BSIZE],otype[i;BSIZE]) out(prices[i;BSIZE]) label("BlkSchlsEqEuroNoDiv")
-			BlkSchlsEqEuroNoDiv( &sptprice[i], &strike[i],
-					&rate[i], &volatility[i], &otime[i],
-					&otype[i], 0, &prices[i], BSIZE);
+			#pragma oss task in(sptprice[beg:end-1], strike[beg:end-1], rate[beg:end-1], \
+					volatility[beg:end-1], otime[beg:end-1], otype[beg:end-1]) \
+					out(prices[beg:end-1]) firstprivate(beg, end) \
+					label("BlkSchlsEqEuroNoDiv")
+			BlkSchlsEqEuroNoDiv( &sptprice[beg], &strike[beg],
+					&rate[beg], &volatility[beg], &otime[beg],
+					&otype[beg], 0, &prices[beg], chunk);
 		}
-		#pragma oss task in(sptprice[i;(numOptions-i)],strike[i;(numOptions-i)],rate[i;(numOptions-i)],volatility[i;(numOptions-i)],otime[i;(numOptions-i)],otype[i;(numOptions-i)]) out(prices[i;(numOptions-i)]) label("BlkSchlsEqEuroNoDiv")
-		BlkSchlsEqEuroNoDiv( &sptprice[i], &strike[i],
-				&rate[i], &volatility[i], &otime[i],
-				&otype[i], 0, &prices[i], numOptions-i); // el thread creador tambe executa les iteracions sobrants d'anar de BS en BS
 
 		// We put a barrier here to avoid overlapping the execution of
 		// tasks in different runs
@@ -313,6 +331,10 @@ int main (int argc, char **argv)
 {
 	FILE *file;
 	int i;
+	int k;
+	int beg;
+	int end;
+	int chunk;
 	int loopnum;
 	fptype * buffer;
 	fptype *prices;
@@ -395,14 +417,20 @@ int main (int argc, char **argv)
 	buffer2 = (int *) nanos6_dmalloc(numOptions * sizeof(fptype) + PAD, nanos6_equpart_distribution, 0, NULL);
 	otype = (int *) (((unsigned long long)buffer2 + PAD) & ~(LINESIZE - 1));
 
-	#pragma oss task in(data[0;numOptions]) out(otype[0;numOptions], sptprice[0;numOptions], strike[0;numOptions], rate[0;numOptions], volatility[0;numOptions], otime[0;numOptions]) label("initialize data")
-	for (i=0; i<numOptions; i++) {
-		otype[i]      = (data[i].OptionType == 'P') ? 1 : 0;
-		sptprice[i]   = data[i].s;
-		strike[i]     = data[i].strike;
-		rate[i]       = data[i].r;
-		volatility[i] = data[i].v;
-		otime[i]      = data[i].t;
+	for (i = 0; i < numOptions; i += BSIZE) {
+		task_chunk(&beg, &end, &chunk, numOptions, i, BSIZE);
+		
+		#pragma oss task in(data[beg:end-1]) out(otype[beg:end-1], sptprice[beg:end-1], strike[beg:end-1], \
+				rate[beg:end-1], volatility[beg:end-1], otime[beg:end-1]) \
+				private(k) firstprivate(beg, end) label("initialize data")
+		for (k = beg; k < end; k++) {
+			otype[k]      = (data[k].OptionType == 'P') ? 1 : 0;
+			sptprice[k]   = data[k].s;
+			strike[k]     = data[k].strike;
+			rate[k]       = data[k].r;
+			volatility[k] = data[k].v;
+			otime[k]      = data[k].t;
+		}
 	}
 	#pragma oss taskwait
 
