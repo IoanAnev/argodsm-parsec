@@ -7,7 +7,7 @@
 #endif
 
 #define FTYPE double
-#define BLOCK_SIZE 16 // Blocking to allow better caching
+#define DEFAULT_BLOCK_SIZE 64 // Blocking to allow better caching
 
 #define RANDSEEDVAL 100
 #define DEFAULT_NUM_TRIALS  102400

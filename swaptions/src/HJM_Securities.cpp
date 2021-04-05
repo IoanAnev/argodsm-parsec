@@ -36,6 +36,7 @@
 #define WEXEC(rank, inst) ({ if ((rank) == 0) inst; })
 
 int NUM_TRIALS = DEFAULT_NUM_TRIALS;
+int BLOCK_SIZE = DEFAULT_BLOCK_SIZE;
 int nThreads = 1;
 int nSwaptions = 1;
 int iN = 11; 
@@ -63,6 +64,14 @@ void distribute(int& beg, int& end, const int& loop_size,
 	int chunk = loop_size / numtasks;
 	beg = workrank * chunk + ((workrank == 0) ? beg_offset : less_equal);
 	end = (workrank != numtasks - 1) ? workrank * chunk + chunk : loop_size;
+}
+
+void task_chunk(int& beg, int& end, int& chunk,
+		const int& size, const int& index, const int& bsize)
+{
+	chunk = (size - index > bsize) ? bsize : size - index;
+	beg = index;
+	end = index + chunk;
 }
 
 void write_to_file()
@@ -101,7 +110,7 @@ void * worker(void *arg)
 #if defined(ENABLE_OMPSS)
 		#pragma omp task firstprivate(i) private(iSuccess, pdSwaptionPrice) inout(swaptions[i])
 #elif defined(ENABLE_OMPSS_2) || defined(ENABLE_OMPSS_2_CLUSTER)
-		#pragma oss task firstprivate(i) private(iSuccess, pdSwaptionPrice) inout(swaptions[i])
+		#pragma oss task firstprivate(i, NUM_TRIALS, BLOCK_SIZE) private(iSuccess, pdSwaptionPrice) inout(swaptions[i])
 #endif
 		{
 			iSuccess = HJM_Swaption_Blocking(pdSwaptionPrice,  swaptions[i].dStrike, 
@@ -243,6 +252,7 @@ void print_usage(char *name) {
 	fprintf(stderr,"\t-sm [number of simulations]\n");
 	fprintf(stderr,"\t-nt [number of threads]\n");
 	fprintf(stderr,"\t-sd [random number seed]\n");
+	fprintf(stderr,"\t-bs [task block size]\n");
 }
 
 //Please note: Whenever we type-cast to (int), we add 0.5 to ensure that the value is rounded to the correct number. 
@@ -288,6 +298,7 @@ int main(int argc, char *argv[])
 
 	for (int j=1; j<argc; j++) {
 		if (!strcmp("-sm", argv[j])) {NUM_TRIALS = atoi(argv[++j]);}
+		else if (!strcmp("-bs", argv[j])) {BLOCK_SIZE = atoi(argv[++j]);}
 		else if (!strcmp("-nt", argv[j])) {nThreads = atoi(argv[++j]);} 
 		else if (!strcmp("-ns", argv[j])) {nSwaptions = atoi(argv[++j]);}
 		else if (!strcmp("-sd", argv[j])) {seed = atoi(argv[++j]);}
@@ -304,7 +315,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	WEXEC(workrank, printf("Number of Simulations: %d,  Number of threads: %d Number of swaptions: %d\n", NUM_TRIALS, nThreads, nSwaptions));
+	WEXEC(workrank, printf("Number of Simulations: %d,  Number of threads: %d Number of swaptions: %d, Task block size: %d\n", NUM_TRIALS, nThreads, nSwaptions, BLOCK_SIZE));
 	swaption_seed = (long)(2147483647L * RanUnif(&seed));
 
 #if defined(ENABLE_THREADS)
@@ -412,35 +423,55 @@ int main(int argc, char *argv[])
 
 	//#pragma omp parallel for private(i, k, j) schedule(SCHED_POLICY)
 	for (i = beg; i < end; i++) {
+#elif defined(ENABLE_OMPSS_2_CLUSTER)
+	// dYears and dStrike need to be initialized by one process due to `seed`
+	#pragma oss task out(swaptions[0;nSwaptions]) private(i) firstprivate(nSwaptions, seed)
+	for (i = 0; i < nSwaptions; i++) {
+		swaptions[i].dYears = 5.0 + ((int)(60*RanUnif(&seed)))*0.25; //5 to 20 years in 3 month intervals
+		swaptions[i].dStrike =  0.1 + ((int)(49*RanUnif(&seed)))*0.1; //strikes ranging from 0.1 to 5.0 in steps of 0.1 
+	}
+	#pragma oss taskwait
+
+	for (i = 0; i < nSwaptions; i += BLOCK_SIZE) {
+		int beg, end, chunk;
+		task_chunk(beg, end, chunk, nSwaptions, i, BLOCK_SIZE);
+	
+		#pragma oss task inout(swaptions[beg:end-1]) \
+				private(i, j, k) firstprivate(iN, iFactors, beg, end)
+		for (i = beg; i < end; i++) {
 #else
-#ifdef ENABLE_OMPSS_2_CLUSTER
-	#pragma oss task inout(swaptions[0;nSwaptions])
-#endif
 	for (i = 0; i < nSwaptions; i++) {
 #endif
 		swaptions[i].Id = i;
 		swaptions[i].iN = iN;
 		swaptions[i].iFactors = iFactors;
 #ifndef ENABLE_ARGO
+#ifndef ENABLE_OMPSS_2_CLUSTER
 		swaptions[i].dYears = 5.0 + ((int)(60*RanUnif(&seed)))*0.25; //5 to 20 years in 3 month intervals
 		swaptions[i].dStrike =  0.1 + ((int)(49*RanUnif(&seed)))*0.1; //strikes ranging from 0.1 to 5.0 in steps of 0.1 
+#endif
 #endif
 		swaptions[i].dCompounding =  0;
 		swaptions[i].dMaturity =  1.0;
 		swaptions[i].dTenor =  2.0;
 		swaptions[i].dPaymentInterval =  1.0;
 
-		swaptions[i].pdYield = dvector(0,iN-1);;
+#ifndef ENABLE_OMPSS_2_CLUSTER
+		swaptions[i].pdYield = dvector(0,iN-1);
 		swaptions[i].pdYield[0] = .1;
 		for(j=1;j<=swaptions[i].iN-1;++j)
 			swaptions[i].pdYield[j] = swaptions[i].pdYield[j-1]+.005;
+#endif
 
+#ifndef ENABLE_OMPSS_2_CLUSTER
 		swaptions[i].ppdFactors = dmatrix(0, swaptions[i].iFactors-1, 0, swaptions[i].iN-2);
 		for(k=0;k<=swaptions[i].iFactors-1;++k)
 			for(j=0;j<=swaptions[i].iN-2;++j)
 				swaptions[i].ppdFactors[k][j] = factors[k][j];
+#endif
 	}
 #ifdef ENABLE_OMPSS_2_CLUSTER
+	}
 	#pragma oss taskwait
 #endif
 
@@ -488,8 +519,10 @@ int main(int argc, char *argv[])
 #else
 	for (i = 0; i < nSwaptions; i++) {
 #endif
+#ifndef ENABLE_OMPSS_2_CLUSTER
 		free_dvector(swaptions[i].pdYield, 0, swaptions[i].iN-1);
 		free_dmatrix(swaptions[i].ppdFactors, 0, swaptions[i].iFactors-1, 0, swaptions[i].iN-2);
+#endif
 	}
 
 #ifdef ENABLE_ARGO

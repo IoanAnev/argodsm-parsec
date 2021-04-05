@@ -34,6 +34,53 @@ int HJM_Swaption_Blocking(FTYPE *pdSwaptionPrice, //Output vector that will stor
 			  int BLOCKSIZE, int tid)
   
 {
+#ifdef ENABLE_OMPSS_2_CLUSTER
+	// initialize input dataset
+	FTYPE **factors = dmatrix(0, iFactors-1, 0, iN-2);
+	//the three rows store vol data for the three factors
+	factors[0][0]= .01;
+	factors[0][1]= .01;
+	factors[0][2]= .01;
+	factors[0][3]= .01;
+	factors[0][4]= .01;
+	factors[0][5]= .01;
+	factors[0][6]= .01;
+	factors[0][7]= .01;
+	factors[0][8]= .01;
+	factors[0][9]= .01;
+
+	factors[1][0]= .009048;
+	factors[1][1]= .008187;
+	factors[1][2]= .007408;
+	factors[1][3]= .006703;
+	factors[1][4]= .006065;
+	factors[1][5]= .005488;
+	factors[1][6]= .004966;
+	factors[1][7]= .004493;
+	factors[1][8]= .004066;
+	factors[1][9]= .003679;
+
+	factors[2][0]= .001000;
+	factors[2][1]= .000750;
+	factors[2][2]= .000500;
+	factors[2][3]= .000250;
+	factors[2][4]= .000000;
+	factors[2][5]= -.000250;
+	factors[2][6]= -.000500;
+	factors[2][7]= -.000750;
+	factors[2][8]= -.001000;
+	factors[2][9]= -.001250;
+
+	pdYield = dvector(0,iN-1);
+	pdYield[0] = .1;
+	for(int j=1;j<=iN-1;++j)
+		pdYield[j] = pdYield[j-1]+.005;
+
+	ppdFactors = dmatrix(0, iFactors-1, 0, iN-2);
+	for(int k=0;k<=iFactors-1;++k)
+		for(int j=0;j<=iN-2;++j)
+			ppdFactors[k][j] = factors[k][j];
+#endif
   int iSuccess = 0;
   int i; 
   int b; //block looping variable
