@@ -68,6 +68,17 @@ static int* center_table; //index table of centers
 static double* gl_lower;
 static int nproc; //# of threads
 
+/* nanos6 global allocations */
+long *g_n;
+double *g_hiz;
+size_t *g_count;
+
+void check() {
+	#pragma oss taskwait
+	printf("SUCCESS\n");
+	exit(EXIT_SUCCESS);
+}
+
 double getusec_()
 {
 	struct timeval time;
@@ -758,37 +769,46 @@ class PStream {
 class SimStream : public PStream {
 	public:
 		SimStream(long n_ ) {
+			#pragma oss task out(*g_n) firstprivate(n_)
+			*g_n = n_;
+			#pragma oss taskwait
 			n = n_;
 		}
 		size_t read( float* dest, int dim, int num ) {
-			size_t count = 0;
+			#pragma oss task out(*g_count)
+			*g_count = 0;
+			#pragma oss taskwait
 			long k1; long k2; long bsize = num/nproc;
+			// #pragma oss task inout(*g_n, *g_count) out(dest[0;dim*num]) private(k1, k2) \
+			// 		firstprivate(bsize, num, dim, nproc) label("SIMSTREAM-COORD-INIT")
 			for (int p = 0; p < nproc; p++)
 			{
 				k1 = p*bsize; k2 = k1+bsize; if (p == nproc-1) k2 = num;
 				// nanos_current_socket(p%NUMANODES);
 				// #pragma oss task out(dest[k1*dim:k2*dim]) firstprivate(k1,k2) label("SIMSTREAM-COORD-INIT") concurrent(count)
+				#pragma oss task inout(*g_n, *g_count) out(dest[k1*dim:(k2-1)*dim]) \
+						firstprivate(k1, k2, dim) label("SIMSTREAM-COORD-INIT")
 				{
 					//int thid = omp_get_thread_num();
 					//fprintf(stderr,"Task of processor %d is being executed by thread %d\n",p,thid);
-					for( int i = k1; i < k2 && n > 0; i++ ) {
+					for( int i = k1; i < k2 && *g_n > 0; i++ ) {
 						for( int k = 0; k < dim; k++ ) {
 							dest[i*dim + k] = lrand48()/(float)INT_MAX;
 						}
-						n--;
+						*g_n -= 1;
 						// #pragma oss atomic
-						count++;
+						*g_count += 1;
 					}
 				}
 			}
-			// #pragma oss taskwait
-			return count;
+			#pragma oss taskwait
+			return *g_count;
 		}
 		int ferror() {
 			return 0;
 		}
 		int feof() {
-			return n <= 0;
+			return *g_n <= 0;
 		}
 		~SimStream() { 
 		}
@@ -867,12 +887,13 @@ void streamCluster( PStream* stream,
 	points.dim = dim;
 	points.num = chunksize;
 	points.p = 
-		(Point *)nanos6_lmalloc(chunksize*sizeof(Point));
+		(Point *)nanos6_dmalloc(chunksize*sizeof(Point), nanos6_equpart_distribution, 0, NULL);
 	Point* po = points.p;
 	for(int p = 0; p < nproc; p++) {
 		k1 = p*bsize; k2 = k1 + bsize; if (p == nproc-1) k2 = chunksize;
 		// nanos_current_socket(p%NUMANODES);
-		#pragma oss task out(po[k1:k2]) firstprivate(k1,k2,block) label("POINT-COORD-INIT")
+		#pragma oss task in(block[k1*dim:(k2-1)*dim]) out(po[k1:k2-1]) \
+				firstprivate(k1,k2,dim) label("POINT-COORD-INIT")
 		{
 			for( int i = k1; i < k2; i++ ) {
 				po[i].coord = &block[i*dim];
@@ -883,7 +904,7 @@ void streamCluster( PStream* stream,
 	Points centers;
 	centers.dim = dim;
 	centers.p = 
-		(Point *)nanos6_lmalloc(centersize*sizeof(Point));
+		(Point *)nanos6_dmalloc(centersize*sizeof(Point), nanos6_equpart_distribution, 0, NULL);
 	centers.num = 0;
 	bsize = centersize/nproc;
 	po = centers.p;
@@ -891,7 +912,8 @@ void streamCluster( PStream* stream,
 	{
 		k1 = p*bsize; k2 = k1 + bsize; if (p == nproc-1) k2 = centersize;
 		// nanos_current_socket(p%NUMANODES);
-		#pragma oss task out(po[k1:k2]) firstprivate(k1,k2,centerBlock) label("CENTERS-COORD-WEIGHT-INIT")
+		#pragma oss task in(centerBlock[k1*dim:(k2-1)*dim]) out(po[k1:k2-1]) \
+				firstprivate(k1,k2,dim) label("CENTERS-COORD-WEIGHT-INIT")
 		{
 			for( int i = k1; i < k2; i++ ) {
 				po[i].coord = &centerBlock[i*dim];
@@ -917,13 +939,15 @@ void streamCluster( PStream* stream,
 		{
 			k1 = p*bsize; k2 = k1 + bsize; if (p == nproc-1) k2 = points.num;
 			// nanos_current_socket(p%NUMANODES);
-			#pragma oss task out(po[k1:k2]) firstprivate(k1,k2) label("POINTS-WEIGHT-INIT")
+			#pragma oss task out(po[k1:k2-1]) firstprivate(k1,k2) label("POINTS-WEIGHT-INIT")
 			{
 				for( int i = k1; i < k2; i++ ) {
 					points.p[i].weight = 1.0;
 				}
 			}
 		}
+		// till here correctly for scheduling=random
+		// check();
 
 		switch_membership = (bool*)nanos6_dmalloc(points.num*sizeof(bool), nanos6_equpart_distribution, 0, NULL);
 		is_center = (bool*)nanos6_dmalloc(points.num*sizeof(bool), nanos6_equpart_distribution, 0, NULL);
@@ -1047,6 +1071,11 @@ int main(int argc, char **argv)
 	else
 		nproc = atoi(argv[10]);
 
+	/* nanos6 global allocations */
+	g_n = (long*)nanos6_dmalloc(sizeof(long), nanos6_equpart_distribution, 0, NULL);
+	g_hiz = (double*)nanos6_dmalloc(sizeof(double), nanos6_equpart_distribution, 0, NULL);
+	g_count = (size_t*)nanos6_dmalloc(sizeof(size_t), nanos6_equpart_distribution, 0, NULL);
+
 	/*Requires Nanox runtime*/
 	// nanos_get_num_sockets(&NUMANODES);
 	// fprintf(stdout,"NUMANODES: %d\n",NUMANODES);
@@ -1058,7 +1087,6 @@ int main(int argc, char **argv)
 	else {
 		stream = new FileStream(infilename);
 	}
-
 
 	roi_tstart = getusec_();
 #ifdef ENABLE_PARSEC_HOOKS
