@@ -1,4 +1,4 @@
-export ARGO_INSTALL_DIRECTORY=${HOME}/argodsm
+export ARGO_INSTALL_DIRECTORY=${HOME}/argodsm/install
 
 CC	= g++
 SRC     = blackscholes.c
@@ -7,90 +7,90 @@ TARGET  = blackscholes-serial
 M4_BASE = .
 M4      = m4
 MACROS  = c.m4.pthreads
-LDFLAGS += -lm
+LIBS    = -lm
 
 
 ifdef version
 	ifeq "$(version)" "pthreads"
-	M4_SRC  = blackscholes.m4.cpp
-	CSRC    = $(M4_SRC)
-	MT      = -DENABLE_THREADS
-	CFLAGS	+= -pthread
+	M4_SRC   = blackscholes.m4.cpp
+	CSRC     = $(M4_SRC)
+	MT       = -DENABLE_THREADS
+	CFLAGS  += -pthread
 	CFLAGS  += -DERR_CHK
-	TARGET  = blackscholes-pthreads
+	TARGET   = blackscholes-pthreads
 endif
 ifeq "$(version)" "omp2"
-	MT    	= -DENABLE_OPENMP
-	CFLAGS	+= -fopenmp -DSCHED_POLICY=static
+	MT       = -DENABLE_OPENMP
+	CFLAGS  += -fopenmp -DSCHED_POLICY=static
 	CFLAGS  += -DERR_CHK
-	TARGET	= blackscholes-omp2
+	TARGET   = blackscholes-omp2
 endif
 ifeq "$(version)" "ompss"
-	CC      = mcc
-	CSRC	= blackscholes-ompss.c
-	MT      = -DENABLE_OMPSS
-	CFLAGS	+= --ompss --no-copy-deps
+	CC       = mcc
+	CSRC     = blackscholes-ompss.c
+	MT       = -DENABLE_OMPSS
+	CFLAGS  += --ompss --no-copy-deps
 	CFLAGS  += -DERR_CHK
-	TARGET  = blackscholes-ompss
+	TARGET   = blackscholes-ompss
 endif
 ifeq "$(version)" "ompss_instr"
-	CC      = mcc
-	CSRC	= blackscholes-ompss.c
-	MT      = -DENABLE_OMPSS
-	CFLAGS	+= --ompss --no-copy-deps --instrument
+	CC       = mcc
+	CSRC     = blackscholes-ompss.c
+	MT       = -DENABLE_OMPSS
+	CFLAGS  += --ompss --no-copy-deps --instrument
 	CFLAGS  += -DERR_CHK
-	TARGET  = blackscholes-ompss_instr
+	TARGET   = blackscholes-ompss_instr
 endif
 ifeq "$(version)" "ompss-2"
-	CC      = mcc
-	CSRC	= blackscholes-ompss-2.c
-	MT      = -DENABLE_OMPSS
-	CFLAGS	+= --ompss-2 --no-copy-deps
+	CC       = mcc
+	CSRC     = blackscholes-ompss-2.c
+	MT       = -DENABLE_OMPSS
+	CFLAGS  += --ompss-2 --no-copy-deps
 	CFLAGS  += -DERR_CHK
-	TARGET  = blackscholes-ompss-2
+	TARGET   = blackscholes-ompss-2
 endif
 ifeq "$(version)" "ompss-2_instr"
-	CC      = mcc
-	CSRC	= blackscholes-ompss-2.c
-	MT      = -DENABLE_OMPSS
-	CFLAGS	+= --ompss-2 --no-copy-deps --instrument
+	CC       = mcc
+	CSRC     = blackscholes-ompss-2.c
+	MT       = -DENABLE_OMPSS
+	CFLAGS  += --ompss-2 --no-copy-deps --instrument
 	CFLAGS  += -DERR_CHK
-	TARGET  = blackscholes-ompss-2_instr
+	TARGET   = blackscholes-ompss-2_instr
 endif
 ifeq "$(version)" "ompss-2-cluster"
-	CC      = mcc
-	CSRC	= blackscholes-ompss-2-cluster.c
-	MT      = -DENABLE_OMPSS
-	CFLAGS	+= --ompss-2 --no-copy-deps
+	CC       = mcc
+	CSRC     = blackscholes-ompss-2-cluster.c
+	MT       = -DENABLE_OMPSS
+	CFLAGS  += --ompss-2 --no-copy-deps
 	CFLAGS  += -DERR_CHK
-	TARGET  = blackscholes-ompss-2-cluster
+	TARGET   = blackscholes-ompss-2-cluster
 endif
 ifeq "$(version)" "ompss-2-cluster_instr"
-	CC      = mcc
-	CSRC	= blackscholes-ompss-2-cluster.c
-	MT      = -DENABLE_OMPSS
-	CFLAGS	+= --ompss-2 --no-copy-deps --instrument
+	CC       = mcc
+	CSRC     = blackscholes-ompss-2-cluster.c
+	MT       = -DENABLE_OMPSS
+	CFLAGS  += --ompss-2 --no-copy-deps --instrument
 	CFLAGS  += -DERR_CHK
-	TARGET  = blackscholes-ompss-2-cluster_instr
+	TARGET   = blackscholes-ompss-2-cluster_instr
 endif
 ifeq "$(version)" "omp4"
-	CC      = gcc
-	CSRC	= blackscholes-omp.c
-	MT      = -DENABLE_OPENMP
-	CFLAGS	+= -fopenmp
+	CC       = gcc
+	CSRC     = blackscholes-omp.c
+	MT       = -DENABLE_OPENMP
+	CFLAGS  += -fopenmp
 	CFLAGS  += -DERR_CHK
-	TARGET	= blackscholes-omp4
+	TARGET   = blackscholes-omp4
 endif
 ifeq "$(version)" "argo"
-	CC      = mpic++
-	CSRC	= blackscholes-argo.cpp
-	CFLAGS	+= -fopenmp -std=c++11
-	CFLAGS  += -DSCHED_POLICY=static -DERR_CHK
-	CFLAGS  += -L${ARGO_INSTALL_DIRECTORY}/build/lib
-	CFLAGS  += -I${ARGO_INSTALL_DIRECTORY}/src
-	CFLAGS  += -largo -largobackend-mpi -lnuma -lrt
-	CFLAGS  += -Wl,-rpath=${ARGO_INSTALL_DIRECTORY}/build/lib
-	TARGET	= blackscholes-argo
+	CC       = mpic++
+	CSRC     = blackscholes-argo.cpp
+	MT       = -DSCHED_POLICY=static -DERR_CHK
+	CFLAGS  += -fopenmp -std=c++11
+	IDFLAGS += -I${ARGO_INSTALL_DIRECTORY}/include/argo
+	LDFLAGS += -L${ARGO_INSTALL_DIRECTORY}/lib
+	LDFLAGS += -Wl,-rpath=${ARGO_INSTALL_DIRECTORY}/lib
+	LIBS    += -largo -largobackend-mpi -lnuma -lrt
+	TARGET   = blackscholes-argo
 endif
 
 else
@@ -123,7 +123,7 @@ CFLAGS += $(MT) $(SZ) $(NCO) $(FUNC) $(ERR) $(CSRC)
 all: $(TARGET)
 
 $(TARGET): clean $(CSRC)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -o $(TARGET)
+	$(CC) $(CFLAGS) $(IDFLAGS) $(LDFLAGS) $(LIBS) -o $(TARGET)
 
 $(M4_SRC): $(SRC)
 	$(M4) $(M4_BASE)/$(MACROS) $< > $@
