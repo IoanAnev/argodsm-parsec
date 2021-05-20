@@ -47,14 +47,14 @@ endif
 
 ifeq "$(version)" "ompss-2-cluster"
 	MCXX      = mcxx
-	DEF      := $(DEF) -DENABLE_OMPSS_2_CLUSTER -DENABLE_OUTPUT
+	DEF      := $(DEF) -DENABLE_OMPSS_2_CLUSTER -DENABLE_OUTPUT -DENABLE_WEAK
 	CXXFLAGS := $(CXXFLAGS) --ompss-2 --no-copy-deps
 	EXEC      = swaptions-ompss-2-cluster
 endif
 
 ifeq "$(version)" "ompss-2-cluster_instr"
 	MCXX      = mcxx
-	DEF      := $(DEF) -DENABLE_OMPSS_2_CLUSTER -DENABLE_OUTPUT
+	DEF      := $(DEF) -DENABLE_OMPSS_2_CLUSTER -DENABLE_OUTPUT #-DENABLE_WEAK
 	CXXFLAGS := $(CXXFLAGS) --ompss-2 --no-copy-deps --instrument
 	EXEC      = swaptions-ompss-2-cluster_instr
 endif

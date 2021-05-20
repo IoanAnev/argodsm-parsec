@@ -35,6 +35,7 @@
 // Macro for only node0 to do stuff
 #define WEXEC(rank, inst) ({ if ((rank) == 0) inst; })
 
+int BSIZE = BSIZE_UNIT;
 int NUM_TRIALS = DEFAULT_NUM_TRIALS;
 int BLOCK_SIZE = DEFAULT_BLOCK_SIZE;
 int nThreads = 1;
@@ -74,6 +75,16 @@ void task_chunk(int& beg, int& end, int& chunk,
 	end = index + chunk;
 }
 
+#if defined(ENABLE_OMPSS_2_CLUSTER)
+void node_chunk(int& node_id, int& chunk,
+		const int& size, const int& index, const int& bsize)
+{
+	static const int nodes = nanos6_get_num_cluster_nodes();
+	chunk = (size - index > bsize) ? bsize : size - index;
+	node_id = ((index / chunk) < nodes) ? index / chunk : nodes-1;
+}
+#endif
+
 void write_to_file()
 {
 	int i, rv;
@@ -106,31 +117,93 @@ void * worker(void *arg)
 {
 	int iSuccess;
 	FTYPE pdSwaptionPrice[2];
-	for(int i=0; i < nSwaptions; i++) {
+
 #if defined(ENABLE_OMPSS)
-		#pragma omp task firstprivate(i) private(iSuccess, pdSwaptionPrice) inout(swaptions[i])
-#elif defined(ENABLE_OMPSS_2) || defined(ENABLE_OMPSS_2_CLUSTER)
-		#pragma oss task firstprivate(i, NUM_TRIALS, BLOCK_SIZE) private(iSuccess, pdSwaptionPrice) inout(swaptions[i])
+	for(int i = 0; i < nSwaptions; i += BSIZE) {
+		int beg, end, chunk;
+		task_chunk(beg, end, chunk, nSwaptions, i, BSIZE);
+
+		#pragma omp task inout(swaptions[beg:end-1])		\
+				 private(iSuccess, pdSwaptionPrice)	\
+				 firstprivate(beg, end,			\
+				 	      NUM_TRIALS, BLOCK_SIZE)
+#elif defined(ENABLE_OMPSS_2)
+	for(int i = 0; i < nSwaptions; i += BSIZE) {
+		int beg, end, chunk;
+		task_chunk(beg, end, chunk, nSwaptions, i, BSIZE);
+
+		#pragma oss task inout(swaptions[beg:end-1])		\
+				 private(iSuccess, pdSwaptionPrice)	\
+				 firstprivate(beg, end,			\
+				 	      NUM_TRIALS, BLOCK_SIZE)
+#elif defined(ENABLE_OMPSS_2_CLUSTER)
+#ifdef ENABLE_WEAK
+	int generic_chunk_nSwaptions = nSwaptions / nanos6_get_num_cluster_nodes();
+
+	for(int z = 0; z < nSwaptions; z += generic_chunk_nSwaptions) {
+		int node_id, chunk_per_node_nSwaptions;
+		node_chunk(node_id, chunk_per_node_nSwaptions, nSwaptions, z, generic_chunk_nSwaptions);
+
+		#pragma oss task weakinout(swaptions[z;chunk_per_node_nSwaptions])	\
+				 private(iSuccess, pdSwaptionPrice)			\
+				 firstprivate(z, chunk_per_node_nSwaptions,		\
+				 	      BSIZE, NUM_TRIALS, BLOCK_SIZE)		\
+				 node(node_id)
+		{
+
+			#pragma oss task inout(swaptions[z;chunk_per_node_nSwaptions])	\
+					 node(nanos6_cluster_no_offload)
+			{
+				// fetch all data in one go
+			}
+
+			for(int i = z; i < z+chunk_per_node_nSwaptions; i += BSIZE) {
+				int beg, end, chunk;
+				task_chunk(beg, end, chunk, z+chunk_per_node_nSwaptions, i, BSIZE);
+
+				#pragma oss task inout(swaptions[beg:end-1])		\
+						 private(iSuccess, pdSwaptionPrice)	\
+						 firstprivate(beg, end,			\
+						 	      NUM_TRIALS, BLOCK_SIZE)	\
+						 node(nanos6_cluster_no_offload)
+#else
+	for(int i = 0; i < nSwaptions; i += BSIZE) {
+		int beg, end, chunk;
+		task_chunk(beg, end, chunk, nSwaptions, i, BSIZE);
+
+		#pragma oss task inout(swaptions[beg:end-1])		\
+				 private(iSuccess, pdSwaptionPrice)	\
+				 firstprivate(beg, end,			\
+				 	      NUM_TRIALS, BLOCK_SIZE)
+#endif
 #endif
 		{
-			iSuccess = HJM_Swaption_Blocking(pdSwaptionPrice,  swaptions[i].dStrike, 
-					swaptions[i].dCompounding, swaptions[i].dMaturity, 
-					swaptions[i].dTenor, swaptions[i].dPaymentInterval,
-					swaptions[i].iN, swaptions[i].iFactors, swaptions[i].dYears, 
-					swaptions[i].pdYield, swaptions[i].ppdFactors,
-					100, NUM_TRIALS, BLOCK_SIZE, 0);
-			assert(iSuccess == 1);
-			swaptions[i].dSimSwaptionMeanPrice = pdSwaptionPrice[0];
-			swaptions[i].dSimSwaptionStdError = pdSwaptionPrice[1];
+			for (int i = beg; i < end; i++) {
+				iSuccess = HJM_Swaption_Blocking(pdSwaptionPrice,  swaptions[i].dStrike, 
+						swaptions[i].dCompounding, swaptions[i].dMaturity, 
+						swaptions[i].dTenor, swaptions[i].dPaymentInterval,
+						swaptions[i].iN, swaptions[i].iFactors, swaptions[i].dYears, 
+						swaptions[i].pdYield, swaptions[i].ppdFactors,
+						100, NUM_TRIALS, BLOCK_SIZE, 0);
+				assert(iSuccess == 1);
+				swaptions[i].dSimSwaptionMeanPrice = pdSwaptionPrice[0];
+				swaptions[i].dSimSwaptionStdError = pdSwaptionPrice[1];
+			}
 		}
 	}
 #if defined(ENABLE_OMPSS)
 	#pragma omp taskwait
-#elif defined(ENABLE_OMPSS_2) || defined(ENABLE_OMPSS_2_CLUSTER)
+#elif defined(ENABLE_OMPSS_2)
+	#pragma oss taskwait
+#elif defined(ENABLE_OMPSS_2_CLUSTER)
+#ifdef ENABLE_WEAK
+		}
+	}
+#endif
 	#pragma oss taskwait
 #endif
 
-	return NULL;    
+	return NULL;
 }
 #elif defined(ENABLE_OMP4)
 {
@@ -298,7 +371,7 @@ int main(int argc, char *argv[])
 
 	for (int j=1; j<argc; j++) {
 		if (!strcmp("-sm", argv[j])) {NUM_TRIALS = atoi(argv[++j]);}
-		else if (!strcmp("-bs", argv[j])) {BLOCK_SIZE = atoi(argv[++j]);}
+		else if (!strcmp("-bs", argv[j])) {BSIZE = atoi(argv[++j]);}
 		else if (!strcmp("-nt", argv[j])) {nThreads = atoi(argv[++j]);} 
 		else if (!strcmp("-ns", argv[j])) {nSwaptions = atoi(argv[++j]);}
 		else if (!strcmp("-sd", argv[j])) {seed = atoi(argv[++j]);}
@@ -315,7 +388,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	WEXEC(workrank, printf("Number of Simulations: %d,  Number of threads: %d Number of swaptions: %d, Task block size: %d\n", NUM_TRIALS, nThreads, nSwaptions, BLOCK_SIZE));
+	WEXEC(workrank, printf("Number of Simulations: %d, Number of threads: %d, Number of swaptions: %d, Task block size: %d\n", NUM_TRIALS, nThreads, nSwaptions, BSIZE));
 	swaption_seed = (long)(2147483647L * RanUnif(&seed));
 
 #if defined(ENABLE_THREADS)
@@ -378,7 +451,7 @@ int main(int argc, char *argv[])
 
 	// setting up multiple swaptions
 	swaptions = 
-#ifdef ENABLE_ARGO
+#if defined(ENABLE_ARGO)
 		argo::conew_array<parm>(nSwaptions);
 
 		// gflag = argo::conew_array<bool>(numtasks);
@@ -390,7 +463,7 @@ int main(int argc, char *argv[])
 #endif
 
 	int k;
-#ifdef ENABLE_ARGO
+#if defined(ENABLE_ARGO)
 	distribute(beg, end, nSwaptions, 0, 0);
 
 	/* It fails correctness with certain memory policies (issue!)
@@ -425,20 +498,53 @@ int main(int argc, char *argv[])
 	for (i = beg; i < end; i++) {
 #elif defined(ENABLE_OMPSS_2_CLUSTER)
 	// dYears and dStrike need to be initialized by one process due to `seed`
-	#pragma oss task out(swaptions[0;nSwaptions]) private(i) firstprivate(nSwaptions, seed)
+	#pragma oss task out(swaptions[0;nSwaptions])	\
+			 private(i)			\
+			 firstprivate(nSwaptions, seed)	\
+			 node(nanos6_cluster_no_offload)
 	for (i = 0; i < nSwaptions; i++) {
 		swaptions[i].dYears = 5.0 + ((int)(60*RanUnif(&seed)))*0.25; //5 to 20 years in 3 month intervals
 		swaptions[i].dStrike =  0.1 + ((int)(49*RanUnif(&seed)))*0.1; //strikes ranging from 0.1 to 5.0 in steps of 0.1 
 	}
 	#pragma oss taskwait
 
-	for (i = 0; i < nSwaptions; i += BLOCK_SIZE) {
+#ifdef ENABLE_WEAK
+	int generic_chunk_nSwaptions = nSwaptions / nanos6_get_num_cluster_nodes();
+
+	for(int z = 0; z < nSwaptions; z += generic_chunk_nSwaptions) {
+		int node_id, chunk_per_node_nSwaptions;
+		node_chunk(node_id, chunk_per_node_nSwaptions, nSwaptions, z, generic_chunk_nSwaptions);
+
+		#pragma oss task weakinout(swaptions[z;chunk_per_node_nSwaptions])		\
+				 private(i, j, k)						\
+				 firstprivate(z, chunk_per_node_nSwaptions, iN, iFactors)	\
+				 node(node_id)
+		{
+			#pragma oss task inout(swaptions[z;chunk_per_node_nSwaptions])	\
+					 node(nanos6_cluster_no_offload)
+			{
+				// fetch all data in one go
+			}
+
+			for(i = z; i < z+chunk_per_node_nSwaptions; i += BSIZE) {
+				int beg, end, chunk;
+				task_chunk(beg, end, chunk, z+chunk_per_node_nSwaptions, i, BSIZE);
+
+				#pragma oss task inout(swaptions[beg:end-1])		\
+						 private(i, j, k)			\
+						 firstprivate(beg, end, iN, iFactors)	\
+						 node(nanos6_cluster_no_offload)
+				for (i = beg; i < end; i++) {
+#else
+	for (i = 0; i < nSwaptions; i += BSIZE) {
 		int beg, end, chunk;
-		task_chunk(beg, end, chunk, nSwaptions, i, BLOCK_SIZE);
+		task_chunk(beg, end, chunk, nSwaptions, i, BSIZE);
 	
-		#pragma oss task inout(swaptions[beg:end-1]) \
-				private(i, j, k) firstprivate(iN, iFactors, beg, end)
+		#pragma oss task inout(swaptions[beg:end-1])	\
+				 private(i, j, k)		\
+				 firstprivate(beg, end, iN, iFactors)
 		for (i = beg; i < end; i++) {
+#endif
 #else
 	for (i = 0; i < nSwaptions; i++) {
 #endif
@@ -471,7 +577,13 @@ int main(int argc, char *argv[])
 #endif
 	}
 #ifdef ENABLE_OMPSS_2_CLUSTER
+#ifdef ENABLE_WEAK
+			}
+		}
 	}
+#else
+	}
+#endif
 	#pragma oss taskwait
 #endif
 
@@ -511,7 +623,15 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef ENABLE_OUTPUT
+#ifdef ENABLE_OMPSS_2_CLUSTER
+	#pragma oss task in(swaptions[0;nSwaptions])	\
+			 firstprivate(workrank)		\
+			 node(nanos6_cluster_no_offload)
+#endif
 	WEXEC(workrank, write_to_file());
+#ifdef ENABLE_OMPSS_2_CLUSTER
+	#pragma oss taskwait
+#endif
 #endif
 
 #ifdef ENABLE_ARGO

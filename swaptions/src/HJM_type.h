@@ -6,8 +6,10 @@
 #error BASELINE and ENABLE_SSE4 are mutually exclusive
 #endif
 
+#define BSIZE_UNIT 64 // Task block size for better distribution
+
 #define FTYPE double
-#define DEFAULT_BLOCK_SIZE 64 // Blocking to allow better caching
+#define DEFAULT_BLOCK_SIZE 16 // Blocking to allow better caching
 
 #define RANDSEEDVAL 100
 #define DEFAULT_NUM_TRIALS  102400
