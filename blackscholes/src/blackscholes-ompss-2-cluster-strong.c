@@ -291,21 +291,23 @@ void BlkSchlsEqEuroNoDiv_inline( fptype *sptprice,
 //////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
 void bs_thread(fptype *prices) {
-	int i, j;
-	int beg, end, chunk;
-	fptype priceDelta;
-
-	for (j = 0; j < NUM_RUNS; j++) {
-		for (i = 0; i < numOptions; i += BSIZE) {
+	for (int j = 0; j < NUM_RUNS; j++) {
+		for (int i = 0; i < numOptions; i += BSIZE) {
+			int beg, end, chunk;
 			task_chunk(&beg, &end, &chunk, numOptions, i, BSIZE);
 
 			/* Calling main function to calculate option value based on 
 			 * Black & Sholes's equation.
 			 */
-			#pragma oss task in(sptprice[beg:end-1], strike[beg:end-1], rate[beg:end-1], \
-					volatility[beg:end-1], otime[beg:end-1], otype[beg:end-1]) \
-					out(prices[beg:end-1]) firstprivate(beg, end) \
-					label("BlkSchlsEqEuroNoDiv")
+			#pragma oss task in( sptprice  [beg:end-1],	\
+					     strike    [beg:end-1],	\
+					     rate      [beg:end-1],	\
+					     volatility[beg:end-1],	\
+					     otime     [beg:end-1],	\
+					     otype     [beg:end-1])	\
+					 out(prices    [beg:end-1])	\
+					 firstprivate(beg, end)		\
+					 label("local: BlkSchlsEqEuroNoDiv")
 			BlkSchlsEqEuroNoDiv( &sptprice[beg], &strike[beg],
 					&rate[beg], &volatility[beg], &otime[beg],
 					&otype[beg], 0, &prices[beg], chunk);
@@ -315,8 +317,8 @@ void bs_thread(fptype *prices) {
 		// tasks in different runs
 		#pragma oss taskwait
 #ifdef ERR_CHK
-		for (i=0; i<numOptions; i++) {
-			priceDelta = data[i].DGrefval - prices[i];
+		for (int i=0; i<numOptions; i++) {
+			fptype priceDelta = data[i].DGrefval - prices[i];
 			if( fabs(priceDelta) >= 1e-4 ){
 				printf("Error on %d. Computed=%.5f, Ref=%.5f, Delta=%.5f\n",
 						i, prices[i], data[i].DGrefval, priceDelta);
@@ -329,17 +331,11 @@ void bs_thread(fptype *prices) {
 
 int main (int argc, char **argv)
 {
-	FILE *file;
-	int i;
-	int k;
-	int beg;
-	int end;
-	int chunk;
-	int loopnum;
-	fptype * buffer;
-	fptype *prices;
-	int * buffer2;
 	int rv;
+	FILE *file;
+	int *buffer2;
+	fptype *buffer;
+	fptype *prices;
 	struct timeval start;
 	struct timeval stop;
 	unsigned long elapsed;
@@ -386,7 +382,7 @@ int main (int argc, char **argv)
 	data = (OptionData*)nanos6_lmalloc(numOptions*sizeof(OptionData));
 	prices = (fptype*)nanos6_dmalloc(numOptions*sizeof(fptype), nanos6_equpart_distribution, 0, NULL);
 	
-	for ( loopnum = 0; loopnum < numOptions; ++ loopnum )
+	for (int loopnum = 0; loopnum < numOptions; ++loopnum)
 	{
 		rv = fscanf(file, "%f %f %f %f %f %f %c %f %f", &data[loopnum].s, &data[loopnum].strike, &data[loopnum].r, &data[loopnum].divq, &data[loopnum].v, &data[loopnum].t, &data[loopnum].OptionType, &data[loopnum].divs, &data[loopnum].DGrefval);
 		if(rv != 9) {
@@ -417,13 +413,20 @@ int main (int argc, char **argv)
 	buffer2 = (int *) nanos6_dmalloc(numOptions * sizeof(fptype) + PAD, nanos6_equpart_distribution, 0, NULL);
 	otype = (int *) (((unsigned long long)buffer2 + PAD) & ~(LINESIZE - 1));
 
-	for (i = 0; i < numOptions; i += BSIZE) {
+	for (int i = 0; i < numOptions; i += BSIZE) {
+		int beg, end, chunk;
 		task_chunk(&beg, &end, &chunk, numOptions, i, BSIZE);
 		
-		#pragma oss task in(data[beg:end-1]) out(otype[beg:end-1], sptprice[beg:end-1], strike[beg:end-1], \
-				rate[beg:end-1], volatility[beg:end-1], otime[beg:end-1]) \
-				private(k) firstprivate(beg, end) label("initialize data")
-		for (k = beg; k < end; k++) {
+		#pragma oss task in( data      [beg:end-1])	\
+				 out(otype     [beg:end-1],	\
+				     sptprice  [beg:end-1],	\
+				     strike    [beg:end-1],	\
+				     rate      [beg:end-1],	\
+				     volatility[beg:end-1], 	\
+				     otime     [beg:end-1])	\
+				 firstprivate(beg, end)		\
+			 	 label("remote: initialize data")
+		for (int k = beg; k < end; k++) {
 			otype[k]      = (data[k].OptionType == 'P') ? 1 : 0;
 			sptprice[k]   = data[k].s;
 			strike[k]     = data[k].strike;
@@ -448,6 +451,16 @@ int main (int argc, char **argv)
 	__parsec_roi_end();
 #endif
 
+	// Bring price data locally
+	fptype* lprices = (fptype*)nanos6_lmalloc(numOptions*sizeof(fptype));
+	#pragma oss task in(prices[0;numOptions])	\
+			 out(lprices[0;numOptions])	\
+			 firstprivate(numOptions)	\
+			 node(nanos6_cluster_no_offload)
+	for (int i = 0; i < numOptions; ++i)
+		lprices[i] = prices[i];
+	#pragma oss taskwait
+
 	// Write prices to output file
 	file = fopen(outputFile, "w");
 	if(file == NULL) {
@@ -460,8 +473,8 @@ int main (int argc, char **argv)
 		fclose(file);
 		exit(1);
 	}
-	for(i=0; i<numOptions; i++) {
-		rv = fprintf(file, "%.18f\n", prices[i]);
+	for(int i=0; i<numOptions; i++) {
+		rv = fprintf(file, "%.18f\n", lprices[i]);
 		if(rv < 0) {
 			printf("ERROR: Unable to write to file `%s'.\n", outputFile);
 			fclose(file);
@@ -478,6 +491,7 @@ int main (int argc, char **argv)
 	printf("Num Errors: %d\n", numError);
 #endif
 	// Deallocate locally allocated memory
+	nanos6_lfree(lprices, numOptions*sizeof(fptype));
 	nanos6_lfree(data, numOptions*sizeof(OptionData));
 	
 	// Deallocate globally allocated memory

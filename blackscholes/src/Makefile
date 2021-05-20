@@ -57,21 +57,37 @@ ifeq "$(version)" "ompss-2_instr"
 	CFLAGS  += -DERR_CHK
 	TARGET   = blackscholes-ompss-2_instr
 endif
-ifeq "$(version)" "ompss-2-cluster"
+ifeq "$(version)" "ompss-2-cluster-strong"
 	CC       = mcc
-	CSRC     = blackscholes-ompss-2-cluster.c
+	CSRC	 = blackscholes-ompss-2-cluster-strong.c
 	MT       = -DENABLE_OMPSS
-	CFLAGS  += --ompss-2 --no-copy-deps
-	CFLAGS  += -DERR_CHK
-	TARGET   = blackscholes-ompss-2-cluster
+	CFLAGS	+= --ompss-2 --no-copy-deps
+	#CFLAGS += -DERR_CHK
+	TARGET   = blackscholes-ompss-2-cluster-strong
 endif
-ifeq "$(version)" "ompss-2-cluster_instr"
+ifeq "$(version)" "ompss-2-cluster-strong_instr"
 	CC       = mcc
-	CSRC     = blackscholes-ompss-2-cluster.c
+	CSRC	 = blackscholes-ompss-2-cluster-strong.c
 	MT       = -DENABLE_OMPSS
-	CFLAGS  += --ompss-2 --no-copy-deps --instrument
-	CFLAGS  += -DERR_CHK
-	TARGET   = blackscholes-ompss-2-cluster_instr
+	CFLAGS	+= --ompss-2 --no-copy-deps --instrument
+	#CFLAGS += -DERR_CHK
+	TARGET   = blackscholes-ompss-2-cluster-strong_instr
+endif
+ifeq "$(version)" "ompss-2-cluster-weak"
+	CC       = mcc
+	CSRC	 = blackscholes-ompss-2-cluster-weak.c
+	MT       = -DENABLE_OMPSS
+	CFLAGS	+= --ompss-2 --no-copy-deps
+	#CFLAGS += -DERR_CHK
+	TARGET   = blackscholes-ompss-2-cluster-weak
+endif
+ifeq "$(version)" "ompss-2-cluster-weak_instr"
+	CC       = mcc
+	CSRC	 = blackscholes-ompss-2-cluster-weak.c
+	MT       = -DENABLE_OMPSS
+	CFLAGS	+= --ompss-2 --no-copy-deps --instrument
+	#CFLAGS += -DERR_CHK
+	TARGET   = blackscholes-ompss-2-cluster-weak_instr
 endif
 ifeq "$(version)" "omp4"
 	CC       = gcc
