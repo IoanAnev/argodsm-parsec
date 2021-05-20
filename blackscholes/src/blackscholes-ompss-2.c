@@ -11,9 +11,9 @@
 //
 // OmpSs-2 version written by Ioannis Anevlavis - Eta Scale AB
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <string.h>
 #include <sys/time.h>
 
@@ -292,23 +292,24 @@ void BlkSchlsEqEuroNoDiv_inline( fptype *sptprice,
 //////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
-void bs_thread(void *tid_ptr,fptype *prices) {
-	int i, j;
-	int beg, end, chunk;
-	fptype priceDelta;
-	int tid = *(int *)tid_ptr;
-
-	for (j = 0; j < NUM_RUNS; j++) {
-		for (i = 0; i < numOptions; i += BSIZE) {
+void bs_thread(fptype *prices) {
+	for (int j = 0; j < NUM_RUNS; j++) {
+		for (int i = 0; i < numOptions; i += BSIZE) {
+			int beg, end, chunk;
 			task_chunk(&beg, &end, &chunk, numOptions, i, BSIZE);
 			
 			/* Calling main function to calculate option value based on 
 			 * Black & Sholes's equation.
 			 */
-			#pragma oss task in(sptprice[beg:end-1], strike[beg:end-1], rate[beg:end-1], \
-					volatility[beg:end-1], otime[beg:end-1], otype[beg:end-1]) \
-					out(prices[beg:end-1]) firstprivate(beg, end) \
-					label("BlkSchlsEqEuroNoDiv")
+			#pragma oss task in( sptprice  [beg:end-1],	\
+					     strike    [beg:end-1],	\
+					     rate      [beg:end-1],	\
+					     volatility[beg:end-1],	\
+					     otime     [beg:end-1],	\
+					     otype     [beg:end-1])	\
+					 out(prices    [beg:end-1])	\
+					 firstprivate(beg, end)		\
+					 label("BlkSchlsEqEuroNoDiv")
 			BlkSchlsEqEuroNoDiv( &sptprice[beg], &strike[beg],
 					&rate[beg], &volatility[beg], &otime[beg],
 					&otype[beg], 0, &prices[beg], chunk);
@@ -316,10 +317,10 @@ void bs_thread(void *tid_ptr,fptype *prices) {
 
 		//We put a barrier here to avoid overlapping the execution of
 		// tasks in different runs
-#pragma oss taskwait
+		#pragma oss taskwait
 #ifdef ERR_CHK
-		for (i=0; i<numOptions; i++) {
-			priceDelta = data[i].DGrefval - prices[i];
+		for (int i=0; i<numOptions; i++) {
+			fptype priceDelta = data[i].DGrefval - prices[i];
 			if( fabs(priceDelta) >= 1e-4 ){
 				printf("Error on %d. Computed=%.5f, Ref=%.5f, Delta=%.5f\n",
 						i, prices[i], data[i].DGrefval, priceDelta);
@@ -332,17 +333,11 @@ void bs_thread(void *tid_ptr,fptype *prices) {
 
 int main (int argc, char **argv)
 {
-	FILE *file;
-	int i;
-	int k;
-	int beg;
-	int end;
-	int chunk;
-	int loopnum;
-	fptype * buffer;
-	fptype *prices;
-	int * buffer2;
 	int rv;
+	FILE *file;
+	int *buffer2;
+	fptype *buffer;
+	fptype *prices;
 	struct timeval start;
 	struct timeval stop;
 	unsigned long elapsed;
@@ -391,7 +386,8 @@ int main (int argc, char **argv)
 	// alloc spaces for the option data
 	data = (OptionData*)malloc(numOptions*sizeof(OptionData));
 	prices = (fptype*)malloc(numOptions*sizeof(fptype));
-	for ( loopnum = 0; loopnum < numOptions; ++ loopnum )
+	
+	for (int loopnum = 0; loopnum < numOptions; ++loopnum)
 	{
 		rv = fscanf(file, "%f %f %f %f %f %f %c %f %f", &data[loopnum].s, &data[loopnum].strike, &data[loopnum].r, &data[loopnum].divq, &data[loopnum].v, &data[loopnum].t, &data[loopnum].OptionType, &data[loopnum].divs, &data[loopnum].DGrefval);
 		if(rv != 9) {
@@ -422,13 +418,20 @@ int main (int argc, char **argv)
 	buffer2 = (int *) malloc(numOptions * sizeof(fptype) + PAD);
 	otype = (int *) (((unsigned long long)buffer2 + PAD) & ~(LINESIZE - 1));
 
-	for (i = 0; i < numOptions; i += BSIZE) {
+	for (int i = 0; i < numOptions; i += BSIZE) {
+		int beg, end, chunk;
 		task_chunk(&beg, &end, &chunk, numOptions, i, BSIZE);
 		
-		#pragma oss task in(data[beg:end-1]) out(otype[beg:end-1], sptprice[beg:end-1], strike[beg:end-1], \
-				rate[beg:end-1], volatility[beg:end-1], otime[beg:end-1]) \
-				private(k) firstprivate(beg, end) label("initialize data")
-		for (k = beg; k < end; k++) {
+		#pragma oss task in( data      [beg:end-1])	\
+				 out(otype     [beg:end-1],	\
+				     sptprice  [beg:end-1],	\
+				     strike    [beg:end-1],	\
+				     rate      [beg:end-1],	\
+				     volatility[beg:end-1], 	\
+				     otime     [beg:end-1])	\
+				 firstprivate(beg, end)		\
+			 	 label("initialize data")
+		for (int k = beg; k < end; k++) {
 			otype[k]      = (data[k].OptionType == 'P') ? 1 : 0;
 			sptprice[k]   = data[k].s;
 			strike[k]     = data[k].strike;
@@ -445,11 +448,8 @@ int main (int argc, char **argv)
 	__parsec_roi_begin();
 #endif
 
-	//do work
-	int tid=0;
-	//omp_set_num_threads(nThreads);
 	gettimeofday(&start,NULL);
-	bs_thread(&tid,prices);
+	bs_thread(prices);
 	gettimeofday(&stop,NULL);
 
 #ifdef ENABLE_PARSEC_HOOKS
@@ -468,7 +468,7 @@ int main (int argc, char **argv)
 		fclose(file);
 		exit(1);
 	}
-	for(i=0; i<numOptions; i++) {
+	for(int i=0; i<numOptions; i++) {
 		rv = fprintf(file, "%.18f\n", prices[i]);
 		if(rv < 0) {
 			printf("ERROR: Unable to write to file `%s'.\n", outputFile);
@@ -487,6 +487,8 @@ int main (int argc, char **argv)
 #endif
 	free(data);
 	free(prices);
+	free(buffer);
+	free(buffer2);
 
 	elapsed = 1000000 * (stop.tv_sec - start.tv_sec);
 	elapsed += stop.tv_usec - start.tv_usec;
@@ -499,4 +501,3 @@ int main (int argc, char **argv)
 
 	return 0;
 }
-
