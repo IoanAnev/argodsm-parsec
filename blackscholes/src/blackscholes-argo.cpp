@@ -350,6 +350,7 @@ int main (int argc, char **argv)
 		volatility[i] = data[i].v;    
 		otime[i]      = data[i].t;
 	}
+	argo::barrier();
 
 	WEXEC(workrank, printf("Size of data: %lu\n", numOptions * (sizeof(OptionData) + sizeof(int))));
 
