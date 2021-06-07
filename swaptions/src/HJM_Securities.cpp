@@ -576,7 +576,7 @@ int main(int argc, char *argv[])
 				swaptions[i].ppdFactors[k][j] = factors[k][j];
 #endif
 	}
-#ifdef ENABLE_OMPSS_2_CLUSTER
+#if defined(ENABLE_OMPSS_2_CLUSTER)
 #ifdef ENABLE_WEAK
 			}
 		}
@@ -585,6 +585,8 @@ int main(int argc, char *argv[])
 	}
 #endif
 	#pragma oss taskwait
+#elif defined(ENABLE_ARGO)
+	argo::barrier();
 #endif
 
 	// **********Calling the Swaption Pricing Routine*****************
