@@ -44,7 +44,7 @@ typedef struct OptionData_ {
 } OptionData;
 
 OptionData *data;
-int numOptions;
+size_t numOptions;
 
 int    * otype;
 fptype * sptprice;
@@ -423,6 +423,7 @@ int main (int argc, char **argv)
     __parsec_roi_end();
 #endif
 
+#ifdef ENABLE_OUTPUT
     //Write prices to output file
     file = fopen(outputFile, "w");
     if(file == NULL) {
@@ -448,6 +449,7 @@ int main (int argc, char **argv)
       printf("ERROR: Unable to close file `%s'.\n", outputFile);
       exit(1);
     }
+#endif
 
 #ifdef ERR_CHK
     printf("Num Errors: %d\n", numError);

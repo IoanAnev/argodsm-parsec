@@ -45,7 +45,7 @@ typedef struct OptionData_ {
 } OptionData;
 
 OptionData *data;
-int numOptions;
+size_t numOptions;
 
 int    * otype;
 fptype * sptprice;
@@ -358,7 +358,7 @@ void bs_thread(fptype *prices) {
 
 		// We put a barrier here to avoid overlapping the execution of
 		// tasks in different runs
-		#pragma oss taskwait
+		// #pragma oss taskwait
 #ifdef ERR_CHK
 		for (int i=0; i<numOptions; i++) {
 			fptype priceDelta = data[i].DGrefval - prices[i];
@@ -370,6 +370,7 @@ void bs_thread(fptype *prices) {
 		}
 #endif
 	}
+	#pragma oss taskwait
 }
 
 int main (int argc, char **argv)
@@ -527,6 +528,7 @@ int main (int argc, char **argv)
 	__parsec_roi_end();
 #endif
 
+#ifdef ENABLE_OUTPUT
 	// Bring price data locally
 	fptype* lprices = (fptype*)nanos6_lmalloc(numOptions*sizeof(fptype));
 	#pragma oss task in(prices[0;numOptions])	\
@@ -562,6 +564,7 @@ int main (int argc, char **argv)
 		printf("ERROR: Unable to close file `%s'.\n", outputFile);
 		exit(1);
 	}
+#endif
 
 #ifdef ERR_CHK
 	printf("Num Errors: %d\n", numError);

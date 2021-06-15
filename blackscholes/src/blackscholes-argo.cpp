@@ -42,7 +42,7 @@ typedef struct OptionData_ {
 
 OptionData *data;
 fptype *prices;
-int numOptions;
+size_t numOptions;
 
 int    * otype;
 fptype * sptprice;
@@ -228,6 +228,9 @@ int bs_thread() {
 					otype[i], 0);
 			prices[i] = price;
 
+		// We put a barrier here to avoid overlapping the execution of
+		// tasks in different runs
+		// argo::barrier();
 #ifdef ERR_CHK
 			priceDelta = data[i].DGrefval - price;
 			if( fabs(priceDelta) >= 1e-4 ){
@@ -238,6 +241,7 @@ int bs_thread() {
 #endif
 		}
 	}
+	argo::barrier();
 
 	return 0;
 }
@@ -360,13 +364,13 @@ int main (int argc, char **argv)
 
 	gettimeofday(&start,NULL);
 	bs_thread();
-	argo::barrier();
 	gettimeofday(&stop,NULL);
 
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_roi_end();
 #endif
 
+#ifdef ENABLE_OUTPUT
 	// Write prices to output file
 	if (workrank == 0) {
 		file = fopen(outputFile, "w");
@@ -394,6 +398,7 @@ int main (int argc, char **argv)
 			exit(1);
 		}
 	}
+#endif
 
 #ifdef ERR_CHK
 	printf("Workrank: %d, Num Errors: %d\n", workrank, numError);
