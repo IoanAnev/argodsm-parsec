@@ -276,8 +276,9 @@ void * worker(void *arg)
 			swaptions[i].dSimSwaptionMeanPrice = pdSwaptionPrice[0];
 			swaptions[i].dSimSwaptionStdError = pdSwaptionPrice[1];
 		}
-		#pragma omp taskwait
 	} //end of parallel region
+	argo::barrier();
+
 	return NULL;    
 }
 #else
@@ -613,9 +614,6 @@ int main(int argc, char *argv[])
 #else
 	int threadID=0;
 	worker(&threadID);
-#ifdef ENABLE_ARGO
-	argo::barrier();
-#endif
 #endif //ENABLE_THREADS
 	WEXEC(workrank, std::cout << "Critical code execution time: " << time(NULL) - startt << std::endl);
 	//***ROI ends***//
