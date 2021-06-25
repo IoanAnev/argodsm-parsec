@@ -293,7 +293,7 @@ int main (int argc, char **argv)
 		WEXEC(workrank, printf("ERROR: Unable to open file `%s'.\n", inputFile));
 		exit(1);
 	}
-	rv = fscanf(file, "%i", &numOptions);
+	rv = fscanf(file, "%lu", &numOptions);
 	if(rv != 1) {
 		WEXEC(workrank, printf("ERROR: Unable to read from file `%s'.\n", inputFile));
 		fclose(file);
@@ -327,7 +327,7 @@ int main (int argc, char **argv)
 		exit(1);
 	}
 
-	WEXEC(workrank, printf("Num of Options: %d\n", numOptions));
+	WEXEC(workrank, printf("Num of Options: %lu\n", numOptions));
 	WEXEC(workrank, printf("Num of Runs: %d\n", NUM_RUNS));
 
 #define PAD 256
