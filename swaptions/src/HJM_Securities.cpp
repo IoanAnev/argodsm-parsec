@@ -56,8 +56,8 @@ int chunksize;
 int numtasks;
 int workrank;
 
-// static bool *gflag;
-// static long *gseed;
+static bool *gflag;
+static long *gseed;
 
 void distribute(int& beg, int& end, const int& loop_size,
 		const int& beg_offset, const int& less_equal)
@@ -455,8 +455,8 @@ int main(int argc, char *argv[])
 #if defined(ENABLE_ARGO)
 		argo::conew_array<parm>(nSwaptions);
 
-		// gflag = argo::conew_array<bool>(numtasks);
-		// gseed = argo::conew_<long>(seed);
+		gflag = argo::conew_array<bool>(numtasks);
+		gseed = argo::conew_<long>(seed);
 #elif defined(ENABLE_OMPSS_2_CLUSTER)
 		(parm *)nanos6_dmalloc(sizeof(parm)*nSwaptions, nanos6_equpart_distribution, 0, NULL);
 #else
@@ -467,11 +467,10 @@ int main(int argc, char *argv[])
 #if defined(ENABLE_ARGO)
 	distribute(beg, end, nSwaptions, 0, 0);
 
-	/* It fails correctness with certain memory policies (issue!)
 	// done to avoid remote accesses for dYears, dStrike (*X)
 	if (workrank != 0) {
 		while(!gflag[workrank-1]) {
-			argo::backend::acquire();
+			argo::backend::selective_acquire(&gflag[workrank-1], sizeof(bool));
 		}
 	}
 
@@ -483,17 +482,16 @@ int main(int argc, char *argv[])
 
 	// (*X)
 	gflag[workrank] = 1;
-	argo::backend::release();
-	*/
+	argo::backend::selective_release(&gflag[workrank], sizeof(bool));
 
 	// let master process do the initialization for dYears and dStrike till issue is investigated
-	if (workrank == 0) {
-		for (i = 0; i < nSwaptions; i++) {
-			swaptions[i].dYears = 5.0 + ((int)(60*RanUnif(&seed)))*0.25; //5 to 20 years in 3 month intervals
-			swaptions[i].dStrike =  0.1 + ((int)(49*RanUnif(&seed)))*0.1; //strikes ranging from 0.1 to 5.0 in steps of 0.1 
-		}
-	}
-	argo::barrier();
+	// if (workrank == 0) {
+	// 	for (i = 0; i < nSwaptions; i++) {
+	// 		swaptions[i].dYears = 5.0 + ((int)(60*RanUnif(&seed)))*0.25; //5 to 20 years in 3 month intervals
+	// 		swaptions[i].dStrike =  0.1 + ((int)(49*RanUnif(&seed)))*0.1; //strikes ranging from 0.1 to 5.0 in steps of 0.1 
+	// 	}
+	// }
+	// argo::barrier();
 
 	//#pragma omp parallel for private(i, k, j) schedule(SCHED_POLICY)
 	for (i = beg; i < end; i++) {
