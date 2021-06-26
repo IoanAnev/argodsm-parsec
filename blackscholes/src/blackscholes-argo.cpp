@@ -12,6 +12,8 @@
 
 #include <omp.h>
 #include <cmath>
+#include <mutex>
+#include <vector>
 #include <iostream>
 #include <sys/time.h>
 
@@ -55,6 +57,27 @@ int numError = 0;
 int workrank;
 int numtasks;
 int nthreads;
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// Initialization Progress
+void init_progress(const size_t i)
+{
+	static std::vector<bool> elem;
+	static std::mutex progress_mutex;
+	static const size_t step = numOptions/numtasks/16;
+	
+	const std::lock_guard<std::mutex> lock(progress_mutex);
+		elem.push_back(1);
+	
+	if (!(i % step))
+		std::cout << "init progress -- "
+		          << "node: "   << workrank
+		          << ", done: " << (int)(((double)elem.size() / (numOptions/numtasks)) * 100) << "%"
+		          << std::endl;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -351,8 +374,11 @@ int main (int argc, char **argv)
 		sptprice[i]   = data[i].s;
 		strike[i]     = data[i].strike;
 		rate[i]       = data[i].r;
-		volatility[i] = data[i].v;    
+		volatility[i] = data[i].v;
 		otime[i]      = data[i].t;
+
+		// init progress
+		init_progress(i);
 	}
 	argo::barrier();
 
@@ -378,7 +404,7 @@ int main (int argc, char **argv)
 			printf("ERROR: Unable to open file `%s'.\n", outputFile);
 			exit(1);
 		}
-		rv = fprintf(file, "%i\n", numOptions);
+		rv = fprintf(file, "%lu\n", numOptions);
 		if(rv < 0) {
 			printf("ERROR: Unable to write to file `%s'.\n", outputFile);
 			fclose(file);
