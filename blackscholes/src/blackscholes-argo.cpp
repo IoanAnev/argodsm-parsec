@@ -63,20 +63,27 @@ int nthreads;
 ///////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 // Initialization Progress
-void init_progress(const size_t i)
+void init_progress()
 {
+	static const size_t step = 10;
+	static const size_t node_chunk = numOptions/numtasks;
+	static const size_t step_chunk = node_chunk/step;
+	
 	static std::vector<bool> elem;
-	static std::mutex progress_mutex;
-	static const size_t step = numOptions/numtasks/16;
+	static std::mutex progr_mutex;
+	static size_t stigma = step_chunk;
 	
-	const std::lock_guard<std::mutex> lock(progress_mutex);
-		elem.push_back(1);
-	
-	if (!(i % step))
+	std::unique_lock<std::mutex> lock(progr_mutex, std::defer_lock);
+	lock.lock();
+	elem.push_back(1);
+	if (elem.size() >= stigma) {
 		std::cout << "init progress -- "
 		          << "node: "   << workrank
-		          << ", done: " << (int)(((double)elem.size() / (numOptions/numtasks)) * 100) << "%"
+		          << ", done: " << ((double)stigma/node_chunk)*100 << "%"
 		          << std::endl;
+		stigma += step_chunk;
+	}
+	lock.unlock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -378,7 +385,7 @@ int main (int argc, char **argv)
 		otime[i]      = data[i].t;
 
 		// init progress
-		init_progress(i);
+		init_progress();
 	}
 	argo::barrier();
 
