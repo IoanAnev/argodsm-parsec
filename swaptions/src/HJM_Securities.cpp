@@ -459,6 +459,11 @@ int main(int argc, char *argv[])
 		gseed = argo::conew_<long>(seed);
 #elif defined(ENABLE_OMPSS_2_CLUSTER)
 		(parm *)nanos6_dmalloc(sizeof(parm)*nSwaptions, nanos6_equpart_distribution, 0, NULL);
+
+		gseed = (long*)nanos6_dmalloc(sizeof(long), nanos6_equpart_distribution, 0, NULL);
+		#pragma oss task out(*gseed) firstprivate(seed)
+			*gseed = seed;
+			
 #else
 		(parm *)malloc(sizeof(parm)*nSwaptions);
 #endif
@@ -496,20 +501,24 @@ int main(int argc, char *argv[])
 	//#pragma omp parallel for private(i, k, j) schedule(SCHED_POLICY)
 	for (i = beg; i < end; i++) {
 #elif defined(ENABLE_OMPSS_2_CLUSTER)
-	// dYears and dStrike need to be initialized by one process due to `seed`
-	#pragma oss task out(swaptions[0;nSwaptions])	\
-			 private(i)			\
-			 firstprivate(nSwaptions, seed)	\
-			 node(nanos6_cluster_no_offload)
-	for (i = 0; i < nSwaptions; i++) {
-		swaptions[i].dYears = 5.0 + ((int)(60*RanUnif(&seed)))*0.25; //5 to 20 years in 3 month intervals
-		swaptions[i].dStrike =  0.1 + ((int)(49*RanUnif(&seed)))*0.1; //strikes ranging from 0.1 to 5.0 in steps of 0.1 
-	}
-	#pragma oss taskwait
-
-#ifdef ENABLE_WEAK
 	int generic_chunk_nSwaptions = nSwaptions / nanos6_get_num_cluster_nodes();
 
+	for(int z = 0; z < nSwaptions; z += generic_chunk_nSwaptions) {
+		int node_id, chunk_per_node_nSwaptions;
+		node_chunk(node_id, chunk_per_node_nSwaptions, nSwaptions, z, generic_chunk_nSwaptions);
+
+		#pragma oss task out(swaptions[z;chunk_per_node_nSwaptions])	\
+				 inout(*gseed)					\
+				 private(i)					\
+				 firstprivate(z, chunk_per_node_nSwaptions)	\
+				 node(node_id)
+		for (i = z; i < z+chunk_per_node_nSwaptions; i++) {
+			swaptions[i].dYears = 5.0 + ((int)(60*RanUnif(gseed)))*0.25; //5 to 20 years in 3 month intervals
+			swaptions[i].dStrike =  0.1 + ((int)(49*RanUnif(gseed)))*0.1; //strikes ranging from 0.1 to 5.0 in steps of 0.1 
+		}
+		#pragma oss taskwait
+	}
+#ifdef ENABLE_WEAK
 	for(int z = 0; z < nSwaptions; z += generic_chunk_nSwaptions) {
 		int node_id, chunk_per_node_nSwaptions;
 		node_chunk(node_id, chunk_per_node_nSwaptions, nSwaptions, z, generic_chunk_nSwaptions);
