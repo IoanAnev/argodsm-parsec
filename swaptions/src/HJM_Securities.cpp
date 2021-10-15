@@ -33,7 +33,10 @@
 #endif
 
 // Macro for only node0 to do stuff
-#define WEXEC(rank, inst) ({ if ((rank) == 0) inst; })
+#define MAIN_PROC(rank, inst) \
+do { \
+	if ((rank) == 0) { inst; } \
+} while (0)
 
 int BSIZE = BSIZE_UNIT;
 int NUM_TRIALS = DEFAULT_NUM_TRIALS;
@@ -352,8 +355,8 @@ int main(int argc, char *argv[])
 
 	//****bench begins****//
 
-	WEXEC(workrank, printf("PARSEC Benchmark Suite\n"));
-	WEXEC(workrank, fflush(NULL));
+	MAIN_PROC(workrank, printf("PARSEC Benchmark Suite\n"));
+	MAIN_PROC(workrank, fflush(NULL));
 
 
 #ifdef ENABLE_PARSEC_HOOKS
@@ -362,12 +365,12 @@ int main(int argc, char *argv[])
 
 	if(argc == 1)
 	{
-		WEXEC(workrank, print_usage(argv[0]));
+		MAIN_PROC(workrank, print_usage(argv[0]));
 		exit(1);
 	}
 
 #if defined(ENABLE_OMPSS) || defined(ENABLE_OMPSS_2) || defined(ENABLE_OMPSS_2_CLUSTER) || defined(ENABLE_OMP2) || defined(ENABLE_OMP4) || defined(ENABLE_ARGO)
-	WEXEC(workrank, printf("Warning! Argumetn -nt is ignored, use NX_ARGS for OMPSs or OMP_NUM_THREADS for OpenMP 4.0\n"));
+	MAIN_PROC(workrank, printf("Warning! Argumetn -nt is ignored, use NX_ARGS for OMPSs or OMP_NUM_THREADS for OpenMP 4.0\n"));
 #endif
 
 	for (int j=1; j<argc; j++) {
@@ -377,19 +380,19 @@ int main(int argc, char *argv[])
 		else if (!strcmp("-ns", argv[j])) {nSwaptions = atoi(argv[++j]);}
 		else if (!strcmp("-sd", argv[j])) {seed = atoi(argv[++j]);}
 		else {
-			WEXEC(workrank, fprintf(stderr,"Error: Unknown option: %s\n", argv[j]));
-			WEXEC(workrank, print_usage(argv[0]));
+			MAIN_PROC(workrank, fprintf(stderr,"Error: Unknown option: %s\n", argv[j]));
+			MAIN_PROC(workrank, print_usage(argv[0]));
 			exit(1);
 		}
 	}
 
 	if(nSwaptions < nThreads) {
-		WEXEC(workrank, fprintf(stderr,"Error: Fewer swaptions than threads.\n"));
-		WEXEC(workrank, print_usage(argv[0]));
+		MAIN_PROC(workrank, fprintf(stderr,"Error: Fewer swaptions than threads.\n"));
+		MAIN_PROC(workrank, print_usage(argv[0]));
 		exit(1);
 	}
 
-	WEXEC(workrank, printf("Number of Simulations: %d, Number of threads: %d, Number of swaptions: %d, Task block size: %d\n", NUM_TRIALS, nThreads, nSwaptions, BSIZE));
+	MAIN_PROC(workrank, printf("Number of Simulations: %d, Number of threads: %d, Number of swaptions: %d, Task block size: %d\n", NUM_TRIALS, nThreads, nSwaptions, BSIZE));
 	swaption_seed = (long)(2147483647L * RanUnif(&seed));
 
 #if defined(ENABLE_THREADS)
@@ -622,7 +625,7 @@ int main(int argc, char *argv[])
 	int threadID=0;
 	worker(&threadID);
 #endif //ENABLE_THREADS
-	WEXEC(workrank, std::cout << "Critical code execution time: " << time(NULL) - startt << std::endl);
+	MAIN_PROC(workrank, std::cout << "Critical code execution time: " << time(NULL) - startt << std::endl);
 	//***ROI ends***//
 
 #ifdef ENABLE_PARSEC_HOOKS
@@ -635,7 +638,7 @@ int main(int argc, char *argv[])
 			 firstprivate(workrank)		\
 			 node(nanos6_cluster_no_offload)
 #endif
-	WEXEC(workrank, write_to_file());
+	MAIN_PROC(workrank, write_to_file());
 #ifdef ENABLE_OMPSS_2_CLUSTER
 	#pragma oss taskwait
 #endif

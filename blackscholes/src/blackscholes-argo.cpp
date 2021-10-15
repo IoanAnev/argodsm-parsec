@@ -27,7 +27,10 @@
 #define NUM_RUNS 100
 
 // Macro for only node0 to do stuff
-#define WEXEC(rank, inst) ({ if ((rank) == 0) inst; })
+#define MAIN_PROC(rank, inst) \
+do { \
+	if ((rank) == 0) { inst; } \
+} while (0)
 
 typedef struct OptionData_ {
 	fptype s;          // spot price
@@ -302,8 +305,8 @@ int main (int argc, char **argv)
 	struct timeval stop;
 	unsigned long elapsed;
 
-	WEXEC(workrank, printf("PARSEC Benchmark Suite\n"));
-	WEXEC(workrank, fflush(NULL));
+	MAIN_PROC(workrank, printf("PARSEC Benchmark Suite\n"));
+	MAIN_PROC(workrank, fflush(NULL));
 
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_bench_begin(__parsec_blackscholes);
@@ -311,7 +314,7 @@ int main (int argc, char **argv)
 
 	if (argc < 3)
 	{
-		WEXEC(workrank, printf("Usage:\n\t%s <inputFile> <outputFile>\n", argv[0]));
+		MAIN_PROC(workrank, printf("Usage:\n\t%s <inputFile> <outputFile>\n", argv[0]));
 		exit(1);
 	}
 	char *inputFile = argv[1];
@@ -320,17 +323,17 @@ int main (int argc, char **argv)
 	// Read input data from file
 	file = fopen(inputFile, "r");
 	if(file == NULL) {
-		WEXEC(workrank, printf("ERROR: Unable to open file `%s'.\n", inputFile));
+		MAIN_PROC(workrank, printf("ERROR: Unable to open file `%s'.\n", inputFile));
 		exit(1);
 	}
 	rv = fscanf(file, "%lu", &numOptions);
 	if(rv != 1) {
-		WEXEC(workrank, printf("ERROR: Unable to read from file `%s'.\n", inputFile));
+		MAIN_PROC(workrank, printf("ERROR: Unable to read from file `%s'.\n", inputFile));
 		fclose(file);
 		exit(1);
 	}
 	if(nthreads > numOptions) {
-		WEXEC(workrank, printf("WARNING: Not enough work, reducing number of threads to match number of options.\n"));
+		MAIN_PROC(workrank, printf("WARNING: Not enough work, reducing number of threads to match number of options.\n"));
 		nthreads = numOptions;
 	}
 
@@ -353,12 +356,12 @@ int main (int argc, char **argv)
 
 	rv = fclose(file);
 	if(rv != 0) {
-		WEXEC(workrank, printf("ERROR: Unable to close file `%s'.\n", inputFile));
+		MAIN_PROC(workrank, printf("ERROR: Unable to close file `%s'.\n", inputFile));
 		exit(1);
 	}
 
-	WEXEC(workrank, printf("Num of Options: %lu\n", numOptions));
-	WEXEC(workrank, printf("Num of Runs: %d\n", NUM_RUNS));
+	MAIN_PROC(workrank, printf("Num of Options: %lu\n", numOptions));
+	MAIN_PROC(workrank, printf("Num of Runs: %d\n", NUM_RUNS));
 
 #define PAD 256
 #define LINESIZE 64
@@ -389,7 +392,7 @@ int main (int argc, char **argv)
 	}
 	argo::barrier();
 
-	WEXEC(workrank, printf("Size of data: %lu\n", numOptions * (sizeof(OptionData) + sizeof(int))));
+	MAIN_PROC(workrank, printf("Size of data: %lu\n", numOptions * (sizeof(OptionData) + sizeof(int))));
 
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_roi_begin();
@@ -444,7 +447,7 @@ int main (int argc, char **argv)
 
 	elapsed = 1000000 * (stop.tv_sec - start.tv_sec);
 	elapsed += stop.tv_usec - start.tv_usec;
-	WEXEC(workrank, printf("par_sec_time_us:%lu\n",elapsed));
+	MAIN_PROC(workrank, printf("par_sec_time_us:%lu\n",elapsed));
 
 #ifdef ENABLE_PARSEC_HOOKS
 	__parsec_bench_end();
